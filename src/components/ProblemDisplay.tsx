@@ -77,7 +77,10 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
       {/* Question */}
       <div className="text-center mb-8">
         <div className="text-6xl font-bold text-gray-800 mb-6">
-          {problem.question}
+          {problem.isAnswered ? 
+            problem.question.replace('?', problem.userAnswer?.toString() || '?') : 
+            problem.question
+          }
         </div>
         
         {showAnswer && (
@@ -89,6 +92,15 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
         {showResult && problem.isAnswered && (
           <div className={`text-2xl font-semibold ${problem.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
             {problem.isCorrect ? '🎉 Đúng rồi!' : '😔 Sai rồi, cố gắng nhé!'}
+          </div>
+        )}
+        
+        {/* Fireworks Animation for Correct Answer */}
+        {showResult && problem.isAnswered && problem.isCorrect && (
+          <div className="fireworks-animation">
+            <div className="text-4xl animate-bounce">🎆</div>
+            <div className="text-3xl animate-pulse">✨</div>
+            <div className="text-2xl animate-ping">🎊</div>
           </div>
         )}
       </div>

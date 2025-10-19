@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fireworks Animation */
+.fireworks-animation {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.fireworks-animation > div {
+  animation-duration: 1s;
+  animation-iteration-count: 3;
+}
+
+.fireworks-animation .animate-bounce {
+  animation-delay: 0s;
+}
+
+.fireworks-animation .animate-pulse {
+  animation-delay: 0.2s;
+}
+
+.fireworks-animation .animate-ping {
+  animation-delay: 0.4s;
+}
+
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;

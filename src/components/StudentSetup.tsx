@@ -58,8 +58,7 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">🧮 Em Học Toán - Lớp 3</h1>
-        <p className="text-gray-600">Thiết lập bài kiểm tra</p>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Thiết lập bài kiểm tra</h1>
       </div>
 
       <div className="space-y-6">
