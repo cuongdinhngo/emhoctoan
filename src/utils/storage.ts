@@ -92,8 +92,10 @@ export class StorageManager {
 
   static getDefaultSettings(): ProblemSettings {
     return {
-      enabledTypes: ['addition', 'subtraction', 'multiplication_table', 'division_table'],
-      difficulty: 'medium'
+      enabledTypes: ['addition', 'subtraction', 'multiplication_table', 'division_table', 'two_digit_multiply', 'two_digit_divide'],
+      difficulty: 'medium',
+      questionQuantity: 25,
+      studentName: ''
     };
   }
 }

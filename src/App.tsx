@@ -1,145 +1,195 @@
 import React, { useState, useEffect } from 'react';
 import { ProblemDisplay } from './components/ProblemDisplay';
 import { AnswerInput } from './components/AnswerInput';
+import { MultipleChoiceInput } from './components/MultipleChoiceInput';
+import { QuestionList } from './components/QuestionList';
 import { ScoreBoard } from './components/ScoreBoard';
 import { ProgressTracker } from './components/ProgressTracker';
-import { SettingsPanel } from './components/SettingsPanel';
+import { StudentSetup } from './components/StudentSetup';
+import { TestResults } from './components/TestResults';
 import { ProblemGenerator } from './utils/problemGenerator';
 import { StorageManager } from './utils/storage';
-import { MathProblem, ProblemSettings, ScoreData, ProgressData, SessionData } from './types';
+import { MathProblem, ProblemSettings, ScoreData, ProgressData, SessionData, QuestionListItem } from './types';
+
+type AppState = 'setup' | 'testing' | 'results';
 
 function App() {
-  const [currentProblem, setCurrentProblem] = useState<MathProblem | null>(null);
-  const [score, setScore] = useState<ScoreData>({ correct: 0, total: 0, streak: 0, bestStreak: 0 });
-  const [settings, setSettings] = useState<ProblemSettings>(StorageManager.getDefaultSettings());
+  const [appState, setAppState] = useState<AppState>('setup');
+  const [sessionData, setSessionData] = useState<SessionData | null>(null);
+  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [progress, setProgress] = useState<ProgressData | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
-  const [isAnswering, setIsAnswering] = useState(false);
-  const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | undefined>(undefined);
-  const [showAnswer, setShowAnswer] = useState(false);
+  const [reviewingQuestionId, setReviewingQuestionId] = useState<string | null>(null);
 
   // Load saved data on mount
   useEffect(() => {
-    const savedSettings = StorageManager.loadSettings();
-    if (savedSettings) {
-      setSettings(savedSettings);
-    }
-
     const savedProgress = StorageManager.loadProgress();
     if (savedProgress) {
       setProgress(savedProgress);
     }
 
     const savedSession = StorageManager.loadSession();
-    if (savedSession && savedSession.settings.enabledTypes.length > 0) {
-      setSettings(savedSession.settings);
-      setScore(savedSession.currentScore);
-      if (savedSession.problems.length > 0 && savedSession.currentProblemIndex < savedSession.problems.length) {
-        setCurrentProblem(savedSession.problems[savedSession.currentProblemIndex]);
-      }
+    if (savedSession && !savedSession.isCompleted) {
+      setSessionData(savedSession);
+      setAppState('testing');
     }
   }, []);
 
-  // Generate new problem
-  const generateNewProblem = () => {
-    if (settings.enabledTypes.length === 0) {
-      alert('Vui lòng chọn ít nhất một loại bài tập trong cài đặt!');
-      return;
-    }
+  // Start new test
+  const startTest = (settings: ProblemSettings) => {
+    const problems = ProblemGenerator.generateUniqueProblems(
+      settings.enabledTypes, 
+      settings.questionQuantity, 
+      settings.difficulty
+    );
 
-    const newProblem = ProblemGenerator.generateRandomProblem(settings.enabledTypes);
-    setCurrentProblem(newProblem);
-    setLastAnswerCorrect(undefined);
-    setShowAnswer(false);
-    setIsAnswering(true);
+    const newSessionData: SessionData = {
+      currentScore: { correct: 0, total: 0, streak: 0, bestStreak: 0 },
+      problems,
+      currentProblemIndex: 0,
+      settings,
+      startTime: Date.now(),
+      isCompleted: false,
+      totalMarks: settings.questionQuantity
+    };
+
+    setSessionData(newSessionData);
+    setCurrentProblemIndex(0);
+    setAppState('testing');
+    StorageManager.saveSession(newSessionData);
   };
 
   // Handle answer submission
   const handleAnswerSubmit = (userAnswer: number) => {
-    if (!currentProblem) return;
+    if (!sessionData) return;
 
+    const currentProblem = sessionData.problems[currentProblemIndex];
     const isCorrect = userAnswer === currentProblem.answer;
-    setLastAnswerCorrect(isCorrect);
-    setShowAnswer(true);
-    setIsAnswering(false);
+
+    // Update the problem
+    const updatedProblems = [...sessionData.problems];
+    updatedProblems[currentProblemIndex] = {
+      ...currentProblem,
+      userAnswer,
+      isCorrect,
+      isAnswered: true
+    };
 
     // Update score
     const newScore: ScoreData = {
-      correct: score.correct + (isCorrect ? 1 : 0),
-      total: score.total + 1,
-      streak: isCorrect ? score.streak + 1 : 0,
-      bestStreak: Math.max(score.bestStreak, isCorrect ? score.streak + 1 : score.streak)
+      correct: sessionData.currentScore.correct + (isCorrect ? 1 : 0),
+      total: sessionData.currentScore.total + 1,
+      streak: isCorrect ? sessionData.currentScore.streak + 1 : 0,
+      bestStreak: Math.max(sessionData.currentScore.bestStreak, isCorrect ? sessionData.currentScore.streak + 1 : sessionData.currentScore.streak)
     };
-    setScore(newScore);
 
-    // Save session data
-    const sessionData: SessionData = {
+    const updatedSessionData: SessionData = {
+      ...sessionData,
       currentScore: newScore,
-      problems: currentProblem ? [currentProblem] : [],
-      currentProblemIndex: 0,
-      settings,
-      startTime: Date.now()
+      problems: updatedProblems
     };
-    StorageManager.saveSession(sessionData);
 
-    // Auto-generate next problem after delay
+    setSessionData(updatedSessionData);
+    StorageManager.saveSession(updatedSessionData);
+
+    // Auto-advance to next question after delay
     setTimeout(() => {
-      generateNewProblem();
+      if (currentProblemIndex < sessionData.problems.length - 1) {
+        setCurrentProblemIndex(currentProblemIndex + 1);
+      } else {
+        // Test completed
+        const completedSessionData: SessionData = {
+          ...updatedSessionData,
+          isCompleted: true
+        };
+        setSessionData(completedSessionData);
+        StorageManager.saveSession(completedSessionData);
+        StorageManager.updateProgress(newScore);
+        setAppState('results');
+      }
     }, 2000);
   };
 
-  // Handle settings change
-  const handleSettingsChange = (newSettings: ProblemSettings) => {
-    setSettings(newSettings);
-    StorageManager.saveSettings(newSettings);
-  };
-
-  // Start new session
-  const startNewSession = () => {
-    setScore({ correct: 0, total: 0, streak: 0, bestStreak: progress?.bestStreak || 0 });
-    setCurrentProblem(null);
-    setLastAnswerCorrect(undefined);
-    setShowAnswer(false);
-    setIsAnswering(false);
-    StorageManager.clearSession();
-    generateNewProblem();
-  };
-
-  // End current session
-  const endSession = () => {
-    if (score.total > 0) {
-      StorageManager.updateProgress(score);
-      const updatedProgress = StorageManager.loadProgress();
-      setProgress(updatedProgress);
+  // Navigate to specific question
+  const navigateToQuestion = (questionId: string) => {
+    const questionIndex = sessionData?.problems.findIndex(p => p.id === questionId);
+    if (questionIndex !== undefined && questionIndex >= 0) {
+      setCurrentProblemIndex(questionIndex);
     }
+  };
+
+  // Review specific question
+  const reviewQuestion = (questionId: string) => {
+    setReviewingQuestionId(questionId);
+    const questionIndex = sessionData?.problems.findIndex(p => p.id === questionId);
+    if (questionIndex !== undefined && questionIndex >= 0) {
+      setCurrentProblemIndex(questionIndex);
+    }
+  };
+
+  // Retake test
+  const retakeTest = () => {
+    if (sessionData) {
+      const newProblems = ProblemGenerator.generateUniqueProblems(
+        sessionData.settings.enabledTypes,
+        sessionData.settings.questionQuantity,
+        sessionData.settings.difficulty
+      );
+
+      const retakeSessionData: SessionData = {
+        ...sessionData,
+        currentScore: { correct: 0, total: 0, streak: 0, bestStreak: 0 },
+        problems: newProblems,
+        currentProblemIndex: 0,
+        isCompleted: false
+      };
+
+      setSessionData(retakeSessionData);
+      setCurrentProblemIndex(0);
+      setAppState('testing');
+      StorageManager.saveSession(retakeSessionData);
+    }
+  };
+
+  // Start new test
+  const startNewTest = () => {
+    setSessionData(null);
+    setCurrentProblemIndex(0);
+    setAppState('setup');
     StorageManager.clearSession();
-    setScore({ correct: 0, total: 0, streak: 0, bestStreak: progress?.bestStreak || 0 });
-    setCurrentProblem(null);
-    setLastAnswerCorrect(undefined);
-    setShowAnswer(false);
-    setIsAnswering(false);
+  };
+
+  // Generate question list for sidebar
+  const generateQuestionList = (): QuestionListItem[] => {
+    if (!sessionData) return [];
+    
+    return sessionData.problems.map((problem, index) => ({
+      id: problem.id,
+      questionNumber: index + 1,
+      isAnswered: problem.isAnswered,
+      isCorrect: problem.isCorrect,
+      isCurrent: index === currentProblemIndex
+    }));
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-800">🧮 Em Học Toán - Lớp 3</h1>
             <div className="flex gap-2">
+              {appState === 'testing' && sessionData && (
+                <div className="text-sm text-gray-600">
+                  Học sinh: <span className="font-semibold">{sessionData.settings.studentName}</span>
+                </div>
+              )}
               <button
                 onClick={() => setShowProgress(true)}
                 className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
               >
                 📊 Thống kê
-              </button>
-              <button
-                onClick={() => setShowSettings(true)}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                ⚙️ Cài đặt
               </button>
             </div>
           </div>
@@ -147,80 +197,92 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Problem Area */}
-          <div className="lg:col-span-2">
-            {currentProblem ? (
-              <div className="space-y-6">
-                <ProblemDisplay 
-                  problem={currentProblem} 
-                  isCorrect={lastAnswerCorrect}
-                  showAnswer={showAnswer}
-                />
-                
-                {isAnswering && (
-                  <AnswerInput 
-                    onSubmit={handleAnswerSubmit}
-                    disabled={!isAnswering}
-                  />
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <div className="text-6xl mb-4">🎯</div>
-                <h2 className="text-2xl font-bold text-gray-700 mb-4">
-                  Sẵn sàng học toán chưa?
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  Chọn cài đặt và bắt đầu làm bài tập nhé!
-                </p>
-                <button
-                  onClick={startNewSession}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-xl text-lg transition-colors"
-                >
-                  Bắt đầu học
-                </button>
-              </div>
-            )}
-          </div>
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        {appState === 'setup' && (
+          <StudentSetup 
+            onStart={startTest}
+            initialSettings={StorageManager.getDefaultSettings()}
+          />
+        )}
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <ScoreBoard score={score} />
-            
-            {currentProblem && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-bold mb-4 text-gray-800">Điều khiển</h3>
-                <div className="space-y-3">
+        {appState === 'testing' && sessionData && (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Question List Sidebar */}
+            <div className="lg:col-span-1">
+              <QuestionList 
+                questions={generateQuestionList()}
+                onQuestionSelect={navigateToQuestion}
+                currentQuestionId={sessionData.problems[currentProblemIndex]?.id || ''}
+              />
+              
+              {/* Control Buttons */}
+              <div className="mt-4 bg-white rounded-xl shadow-lg p-4">
+                <h3 className="text-lg font-bold mb-3 text-gray-800">Điều khiển</h3>
+                <div className="space-y-2">
                   <button
-                    onClick={generateNewProblem}
-                    disabled={isAnswering}
-                    className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                    onClick={startNewTest}
+                    className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
                   >
-                    🔄 Bài tiếp theo
+                    🔄 Bắt đầu lại
                   </button>
                   <button
-                    onClick={endSession}
-                    className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                    onClick={() => setShowProgress(true)}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
                   >
-                    🏁 Kết thúc
+                    📊 Xem thống kê
                   </button>
                 </div>
               </div>
-            )}
+            </div>
+
+            {/* Main Content Area */}
+            <div className="lg:col-span-3">
+              <div className="space-y-6">
+                <ProblemDisplay 
+                  problem={sessionData.problems[currentProblemIndex]}
+                  questionNumber={currentProblemIndex + 1}
+                  totalQuestions={sessionData.problems.length}
+                  showResult={sessionData.problems[currentProblemIndex].isAnswered}
+                />
+                
+                {!sessionData.problems[currentProblemIndex].isAnswered ? (
+                  sessionData.problems[currentProblemIndex].questionType === 'multiple_choice' ? (
+                    <MultipleChoiceInput
+                      options={sessionData.problems[currentProblemIndex].options || []}
+                      correctAnswer={sessionData.problems[currentProblemIndex].answer}
+                      onAnswerSelect={handleAnswerSubmit}
+                    />
+                  ) : (
+                    <AnswerInput 
+                      onSubmit={handleAnswerSubmit}
+                    />
+                  )
+                ) : (
+                  <div className="text-center p-6 bg-gray-50 rounded-xl">
+                    <div className="text-lg text-gray-600">
+                      {sessionData.problems[currentProblemIndex].isCorrect ? '✅ Đã trả lời đúng' : '❌ Đã trả lời sai'}
+                    </div>
+                    <div className="text-sm text-gray-500 mt-2">
+                      Đáp án của bạn: {sessionData.problems[currentProblemIndex].userAnswer}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {appState === 'results' && sessionData && (
+          <TestResults 
+            sessionData={sessionData}
+            onReviewQuestion={reviewQuestion}
+            onRetake={retakeTest}
+            onNewTest={startNewTest}
+          />
+        )}
       </main>
 
-      {/* Modals */}
-      <SettingsPanel 
-        settings={settings}
-        onSettingsChange={handleSettingsChange}
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-      />
-
+      {/* Progress Modal */}
       {progress && (
         <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ${showProgress ? 'block' : 'hidden'}`}>
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">

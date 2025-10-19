@@ -35,7 +35,7 @@ A Vietnamese math learning web application designed for Grade 3 students to prac
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/emhoctoan.git
+git clone https://github.com/cuongdinhngo/emhoctoan.git
 cd emhoctoan
 ```
 
