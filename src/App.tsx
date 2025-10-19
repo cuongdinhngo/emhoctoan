@@ -179,22 +179,36 @@ function App() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800">🧮 Em Học Toán - Lớp 3</h1>
+          {/* First Row: App Icon & User Name */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-3">
+              <div className="text-3xl">🧮</div>
+              <h1 className="text-xl font-bold text-gray-800">Em Học Toán - Lớp 3</h1>
+            </div>
+            {appState === 'testing' && sessionData && (
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold">{sessionData.settings.studentName}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Second Row: Reset & Stats Buttons (only show during testing) */}
+          {appState === 'testing' && sessionData && (
             <div className="flex gap-2">
-              {appState === 'testing' && sessionData && (
-                <div className="text-sm text-gray-600">
-                  Học sinh: <span className="font-semibold">{sessionData.settings.studentName}</span>
-                </div>
-              )}
+              <button
+                onClick={startNewTest}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+              >
+                🔄 Bắt đầu lại
+              </button>
               <button
                 onClick={() => setShowProgress(true)}
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
               >
                 📊 Thống kê
               </button>
             </div>
-          </div>
+          )}
         </div>
       </header>
 
@@ -209,11 +223,11 @@ function App() {
 
         {appState === 'testing' && sessionData && (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Mobile Menu Button */}
-            <div className="lg:hidden fixed top-4 right-4 z-30">
+            {/* Mobile Menu Button - Bottom Right */}
+            <div className="lg:hidden fixed bottom-4 right-4 z-30">
               <button
                 onClick={() => setShowMobileDrawer(true)}
-                className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-colors"
+                className="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -237,25 +251,6 @@ function App() {
                 onQuestionSelect={navigateToQuestion}
                 currentQuestionId={sessionData.problems[currentProblemIndex]?.id || ''}
               />
-              
-              {/* Control Buttons */}
-              <div className="mt-4 bg-white rounded-xl shadow-lg p-4">
-                <h3 className="text-lg font-bold mb-3 text-gray-800">Điều khiển</h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={startNewTest}
-                    className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-                  >
-                    🔄 Bắt đầu lại
-                  </button>
-                  <button
-                    onClick={() => setShowProgress(true)}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-                  >
-                    📊 Xem thống kê
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* Main Content Area */}
@@ -268,21 +263,6 @@ function App() {
                   showResult={sessionData.problems[currentProblemIndex].isAnswered}
                 />
                 
-                {/* Mobile Control Buttons */}
-                <div className="lg:hidden flex gap-2 mb-4">
-                  <button
-                    onClick={startNewTest}
-                    className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-                  >
-                    🔄 Bắt đầu lại
-                  </button>
-                  <button
-                    onClick={() => setShowProgress(true)}
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-                  >
-                    📊 Thống kê
-                  </button>
-                </div>
                 
                 {!sessionData.problems[currentProblemIndex].isAnswered ? (
                   sessionData.problems[currentProblemIndex].questionType === 'multiple_choice' ? (
