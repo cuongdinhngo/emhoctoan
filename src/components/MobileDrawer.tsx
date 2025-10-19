@@ -48,11 +48,11 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
       )}
       
       {/* Drawer */}
-      <div className={`fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
+      <div className={`fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
           <h3 className="text-lg font-bold text-gray-800">Danh sách câu hỏi</h3>
           <button
             onClick={onClose}
@@ -65,7 +65,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
         </div>
         
         {/* Questions List */}
-        <div className="p-4 h-full overflow-y-auto">
+        <div className="p-4 flex-1 overflow-y-auto pb-20">
           <div className="space-y-2">
             {questions.map((question) => (
               <button

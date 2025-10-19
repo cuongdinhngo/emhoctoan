@@ -179,36 +179,69 @@ function App() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          {/* First Row: App Icon & User Name */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-3">
-              <div className="text-3xl">🧮</div>
-              <h1 className="text-xl font-bold text-gray-800">Em Học Toán - Lớp 3</h1>
+          {/* Mobile Layout */}
+          <div className="lg:hidden">
+            {/* First Row: App Icon & User Name */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-3">
+                <div className="text-3xl">🧮</div>
+                <h1 className="text-xl font-bold text-gray-800">Em Học Toán - Lớp 3</h1>
+              </div>
+              {appState === 'testing' && sessionData && (
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold">{sessionData.settings.studentName}</span>
+                </div>
+              )}
             </div>
+            
+            {/* Second Row: Reset & Stats Buttons (only show during testing) */}
             {appState === 'testing' && sessionData && (
-              <div className="text-sm text-gray-600">
-                <span className="font-semibold">{sessionData.settings.studentName}</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={startNewTest}
+                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                  🔄 Bắt đầu lại
+                </button>
+                <button
+                  onClick={() => setShowProgress(true)}
+                  className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                  📊 Thống kê
+                </button>
               </div>
             )}
           </div>
-          
-          {/* Second Row: Reset & Stats Buttons (only show during testing) */}
-          {appState === 'testing' && sessionData && (
-            <div className="flex gap-2">
-              <button
-                onClick={startNewTest}
-                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-              >
-                🔄 Bắt đầu lại
-              </button>
-              <button
-                onClick={() => setShowProgress(true)}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-              >
-                📊 Thống kê
-              </button>
+
+          {/* Web Layout */}
+          <div className="hidden lg:flex lg:items-center lg:justify-between">
+            {/* Left side: App Icon */}
+            <div className="flex items-center space-x-3">
+              <div className="text-3xl">🧮</div>
+              <h1 className="text-2xl font-bold text-gray-800">Em Học Toán - Lớp 3</h1>
             </div>
-          )}
+            
+            {/* Right side: User Name, Reset & Stats Buttons (only show during testing) */}
+            {appState === 'testing' && sessionData && (
+              <div className="flex items-center space-x-4">
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold">{sessionData.settings.studentName}</span>
+                </div>
+                <button
+                  onClick={startNewTest}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                  🔄 Bắt đầu lại
+                </button>
+                <button
+                  onClick={() => setShowProgress(true)}
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                  📊 Thống kê
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
