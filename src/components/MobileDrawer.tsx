@@ -6,15 +6,14 @@ interface MobileDrawerProps {
   onClose: () => void;
   questions: QuestionListItem[];
   onQuestionSelect: (questionId: string) => void;
-  currentQuestionId: string;
+  currentQuestionId?: string;
 }
 
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({ 
   isOpen, 
   onClose, 
   questions, 
-  onQuestionSelect, 
-  currentQuestionId 
+  onQuestionSelect
 }) => {
   const getQuestionStatusIcon = (question: QuestionListItem) => {
     if (question.isCurrent) return '📍';
