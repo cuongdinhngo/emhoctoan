@@ -56,7 +56,8 @@ export class StorageManager {
       totalCorrect: 0,
       bestStreak: 0,
       averageScore: 0,
-      lastPlayed: new Date().toISOString()
+      lastPlayed: new Date().toISOString(),
+      studentName: ''
     };
 
     const newProgress: ProgressData = {
@@ -65,7 +66,8 @@ export class StorageManager {
       totalCorrect: currentProgress.totalCorrect + sessionScore.correct,
       bestStreak: Math.max(currentProgress.bestStreak, sessionScore.streak),
       averageScore: (currentProgress.totalCorrect + sessionScore.correct) / (currentProgress.totalProblems + sessionScore.total),
-      lastPlayed: new Date().toISOString()
+      lastPlayed: new Date().toISOString(),
+      studentName: currentProgress.studentName
     };
 
     this.saveProgress(newProgress);

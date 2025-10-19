@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ProblemDisplay } from './components/ProblemDisplay';
 import { AnswerInput } from './components/AnswerInput';
 import { MultipleChoiceInput } from './components/MultipleChoiceInput';
 import { QuestionList } from './components/QuestionList';
-import { ScoreBoard } from './components/ScoreBoard';
+// import { ScoreBoard } from './components/ScoreBoard';
 import { ProgressTracker } from './components/ProgressTracker';
 import { StudentSetup } from './components/StudentSetup';
 import { TestResults } from './components/TestResults';
 import { ProblemGenerator } from './utils/problemGenerator';
 import { StorageManager } from './utils/storage';
-import { MathProblem, ProblemSettings, ScoreData, ProgressData, SessionData, QuestionListItem } from './types';
+import { ProblemSettings, ScoreData, ProgressData, SessionData, QuestionListItem } from './types';
 
 type AppState = 'setup' | 'testing' | 'results';
 
@@ -19,7 +19,7 @@ function App() {
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [progress, setProgress] = useState<ProgressData | null>(null);
   const [showProgress, setShowProgress] = useState(false);
-  const [reviewingQuestionId, setReviewingQuestionId] = useState<string | null>(null);
+  // const [reviewingQuestionId, setReviewingQuestionId] = useState<string | null>(null);
 
   // Load saved data on mount
   useEffect(() => {
@@ -120,7 +120,7 @@ function App() {
 
   // Review specific question
   const reviewQuestion = (questionId: string) => {
-    setReviewingQuestionId(questionId);
+    // setReviewingQuestionId(questionId);
     const questionIndex = sessionData?.problems.findIndex(p => p.id === questionId);
     if (questionIndex !== undefined && questionIndex >= 0) {
       setCurrentProblemIndex(questionIndex);

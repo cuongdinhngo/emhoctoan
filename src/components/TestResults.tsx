@@ -1,5 +1,5 @@
 import React from 'react';
-import { MathProblem, SessionData } from '../types';
+import { SessionData } from '../types';
 
 interface TestResultsProps {
   sessionData: SessionData;

@@ -1,9 +1,9 @@
 import { MathProblem, ProblemType, QuestionType } from '../types';
 
 export class ProblemGenerator {
-  private static generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
-  }
+  // private static generateId(): string {
+  //   return Math.random().toString(36).substr(2, 9);
+  // }
 
   private static getRandomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;

@@ -4,13 +4,12 @@ import { QuestionListItem } from '../types';
 interface QuestionListProps {
   questions: QuestionListItem[];
   onQuestionSelect: (questionId: string) => void;
-  currentQuestionId: string;
+  currentQuestionId?: string;
 }
 
 export const QuestionList: React.FC<QuestionListProps> = ({ 
   questions, 
-  onQuestionSelect, 
-  currentQuestionId 
+  onQuestionSelect
 }) => {
   const getQuestionStatusIcon = (question: QuestionListItem) => {
     if (question.isCurrent) return '📍';

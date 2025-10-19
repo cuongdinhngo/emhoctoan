@@ -136,7 +136,7 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
                   name="difficulty"
                   value={value}
                   checked={difficulty === value}
-                  onChange={(e) => setDifficulty(e.target.value)}
+                  onChange={(e) => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
                   className="mr-3 h-4 w-4 text-blue-600"
                 />
                 <div>
