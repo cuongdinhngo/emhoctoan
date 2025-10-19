@@ -3,6 +3,7 @@ import { ProblemDisplay } from './components/ProblemDisplay';
 import { AnswerInput } from './components/AnswerInput';
 import { MultipleChoiceInput } from './components/MultipleChoiceInput';
 import { QuestionList } from './components/QuestionList';
+import { MobileDrawer } from './components/MobileDrawer';
 // import { ScoreBoard } from './components/ScoreBoard';
 import { ProgressTracker } from './components/ProgressTracker';
 import { StudentSetup } from './components/StudentSetup';
@@ -19,6 +20,7 @@ function App() {
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [progress, setProgress] = useState<ProgressData | null>(null);
   const [showProgress, setShowProgress] = useState(false);
+  const [showMobileDrawer, setShowMobileDrawer] = useState(false);
   // const [reviewingQuestionId, setReviewingQuestionId] = useState<string | null>(null);
 
   // Load saved data on mount
@@ -207,8 +209,29 @@ function App() {
 
         {appState === 'testing' && sessionData && (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Question List Sidebar */}
-            <div className="lg:col-span-1">
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden fixed top-4 right-4 z-30">
+              <button
+                onClick={() => setShowMobileDrawer(true)}
+                className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Mobile Drawer */}
+            <MobileDrawer
+              isOpen={showMobileDrawer}
+              onClose={() => setShowMobileDrawer(false)}
+              questions={generateQuestionList()}
+              onQuestionSelect={navigateToQuestion}
+              currentQuestionId={sessionData.problems[currentProblemIndex]?.id || ''}
+            />
+
+            {/* Desktop Question List Sidebar */}
+            <div className="hidden lg:block lg:col-span-1">
               <QuestionList 
                 questions={generateQuestionList()}
                 onQuestionSelect={navigateToQuestion}
@@ -244,6 +267,22 @@ function App() {
                   totalQuestions={sessionData.problems.length}
                   showResult={sessionData.problems[currentProblemIndex].isAnswered}
                 />
+                
+                {/* Mobile Control Buttons */}
+                <div className="lg:hidden flex gap-2 mb-4">
+                  <button
+                    onClick={startNewTest}
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                  >
+                    🔄 Bắt đầu lại
+                  </button>
+                  <button
+                    onClick={() => setShowProgress(true)}
+                    className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                  >
+                    📊 Thống kê
+                  </button>
+                </div>
                 
                 {!sessionData.problems[currentProblemIndex].isAnswered ? (
                   sessionData.problems[currentProblemIndex].questionType === 'multiple_choice' ? (

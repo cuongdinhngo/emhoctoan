@@ -82,18 +82,21 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Số câu hỏi
           </label>
-          <select
-            value={questionQuantity}
-            onChange={(e) => setQuestionQuantity(Number(e.target.value))}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value={10}>10 câu</option>
-            <option value={15}>15 câu</option>
-            <option value={20}>20 câu</option>
-            <option value={25}>25 câu</option>
-            <option value={30}>30 câu</option>
-            <option value={50}>50 câu</option>
-          </select>
+          <div className="grid grid-cols-2 gap-2">
+            {[10, 15, 20, 25, 30, 50].map((quantity) => (
+              <button
+                key={quantity}
+                onClick={() => setQuestionQuantity(quantity)}
+                className={`p-3 rounded-lg border-2 text-center font-medium transition-colors ${
+                  questionQuantity === quantity
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300'
+                }`}
+              >
+                {quantity} câu
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Problem Types */}
