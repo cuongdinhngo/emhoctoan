@@ -429,6 +429,349 @@ export class ProblemGenerator {
     };
   }
 
+  // Dạng toán về hơn kém số đơn vị
+  static generateWordProblemMoreLess(difficulty: 'easy' | 'medium' | 'hard' = 'medium'): MathProblem {
+    const names = ['An', 'Bình', 'Mai', 'Hoa', 'Nam', 'Lan', 'Hùng', 'Hương'];
+    const objects = ['quả táo', 'viên bi', 'cái kẹo', 'quyển vở', 'cái bút', 'quả cam', 'cái bánh', 'quyển sách'];
+    const isMore = Math.random() < 0.5;
+    let a, diff, answer;
+    
+    switch (difficulty) {
+      case 'easy':
+        a = this.getRandomInt(5, 20);
+        diff = this.getRandomInt(2, 8);
+        break;
+      case 'medium':
+        a = this.getRandomInt(10, 50);
+        diff = this.getRandomInt(5, 15);
+        break;
+      case 'hard':
+        a = this.getRandomInt(20, 100);
+        diff = this.getRandomInt(10, 30);
+        break;
+      default:
+        a = this.getRandomInt(5, 50);
+        diff = this.getRandomInt(2, 15);
+    }
+    
+    answer = isMore ? a + diff : a - diff;
+    const name1 = names[this.getRandomInt(0, names.length - 1)];
+    let name2 = names[this.getRandomInt(0, names.length - 1)];
+    while (name2 === name1) {
+      name2 = names[this.getRandomInt(0, names.length - 1)];
+    }
+    const object = objects[this.getRandomInt(0, objects.length - 1)];
+    
+    const question = isMore 
+      ? `${name1} có ${a} ${object}. ${name2} có nhiều hơn ${name1} ${diff} ${object}. Hỏi ${name2} có bao nhiêu ${object}?`
+      : `${name1} có ${a} ${object}. ${name2} có ít hơn ${name1} ${diff} ${object}. Hỏi ${name2} có bao nhiêu ${object}?`;
+    
+    const questionType: QuestionType = Math.random() < 0.5 ? 'multiple_choice' : 'input';
+    
+    return {
+      id: this.generateUniqueId(),
+      type: 'word_problem_more_less',
+      question: question,
+      answer: answer,
+      questionType: questionType,
+      options: questionType === 'multiple_choice' ? this.generateMultipleChoiceOptions(answer) : undefined,
+      isAnswered: false
+    };
+  }
+
+  // Dạng toán về gấp số lần, giảm số lần
+  static generateWordProblemMultiplyDivide(difficulty: 'easy' | 'medium' | 'hard' = 'medium'): MathProblem {
+    const objects = ['cái bút', 'quả cam', 'cái bánh', 'quyển vở', 'viên bi', 'cái kẹo', 'quyển sách', 'cái bút chì'];
+    const containers = ['hộp', 'túi', 'đĩa', 'rổ', 'thùng', 'giỏ', 'hộp', 'túi'];
+    const isMultiply = Math.random() < 0.5;
+    let base, multiplier, answer;
+    
+    switch (difficulty) {
+      case 'easy':
+        base = this.getRandomInt(3, 10);
+        multiplier = this.getRandomInt(2, 5);
+        break;
+      case 'medium':
+        base = this.getRandomInt(5, 15);
+        multiplier = this.getRandomInt(3, 8);
+        break;
+      case 'hard':
+        base = this.getRandomInt(8, 20);
+        multiplier = this.getRandomInt(4, 10);
+        break;
+      default:
+        base = this.getRandomInt(3, 15);
+        multiplier = this.getRandomInt(2, 8);
+    }
+    
+    if (isMultiply) {
+      answer = base * multiplier;
+      const object = objects[this.getRandomInt(0, objects.length - 1)];
+      const container = containers[this.getRandomInt(0, containers.length - 1)];
+      const question = `Một ${container} có ${base} ${object}. Hỏi ${multiplier} ${container} như thế có bao nhiêu ${object}?`;
+      const questionType: QuestionType = Math.random() < 0.5 ? 'multiple_choice' : 'input';
+      
+      return {
+        id: this.generateUniqueId(),
+        type: 'word_problem_multiply_divide',
+        question: question,
+        answer: answer,
+        questionType: questionType,
+        options: questionType === 'multiple_choice' ? this.generateMultipleChoiceOptions(answer) : undefined,
+        isAnswered: false
+      };
+    } else {
+      answer = base;
+      const total = base * multiplier;
+      const object = objects[this.getRandomInt(0, objects.length - 1)];
+      const container = containers[this.getRandomInt(0, containers.length - 1)];
+      const question = `Có ${total} ${object} chia đều vào ${multiplier} ${container}. Hỏi mỗi ${container} có bao nhiêu ${object}?`;
+      const questionType: QuestionType = Math.random() < 0.5 ? 'multiple_choice' : 'input';
+      
+      return {
+        id: this.generateUniqueId(),
+        type: 'word_problem_multiply_divide',
+        question: question,
+        answer: answer,
+        questionType: questionType,
+        options: questionType === 'multiple_choice' ? this.generateMultipleChoiceOptions(answer) : undefined,
+        isAnswered: false
+      };
+    }
+  }
+
+  // Dạng toán liên quan đến rút về đơn vị
+  static generateWordProblemUnitConversion(difficulty: 'easy' | 'medium' | 'hard' = 'medium'): MathProblem {
+    const objects = ['quả cam', 'cái bút', 'quyển vở', 'viên bi', 'cái kẹo', 'quả táo', 'cái bánh', 'quyển sách'];
+    const containers = ['túi', 'hộp', 'đĩa', 'rổ', 'thùng', 'giỏ'];
+    let total, numContainers, answer;
+    
+    switch (difficulty) {
+      case 'easy':
+        numContainers = this.getRandomInt(2, 5);
+        answer = this.getRandomInt(3, 10);
+        total = numContainers * answer;
+        break;
+      case 'medium':
+        numContainers = this.getRandomInt(3, 8);
+        answer = this.getRandomInt(5, 15);
+        total = numContainers * answer;
+        break;
+      case 'hard':
+        numContainers = this.getRandomInt(4, 10);
+        answer = this.getRandomInt(8, 20);
+        total = numContainers * answer;
+        break;
+      default:
+        numContainers = this.getRandomInt(2, 8);
+        answer = this.getRandomInt(3, 15);
+        total = numContainers * answer;
+    }
+    
+    const object = objects[this.getRandomInt(0, objects.length - 1)];
+    const container = containers[this.getRandomInt(0, containers.length - 1)];
+    const question = `Một cửa hàng có ${total} ${object}, chia đều vào ${numContainers} ${container}. Hỏi mỗi ${container} có bao nhiêu ${object}?`;
+    const questionType: QuestionType = Math.random() < 0.5 ? 'multiple_choice' : 'input';
+    
+    return {
+      id: this.generateUniqueId(),
+      type: 'word_problem_unit_conversion',
+      question: question,
+      answer: answer,
+      questionType: questionType,
+      options: questionType === 'multiple_choice' ? this.generateMultipleChoiceOptions(answer) : undefined,
+      isAnswered: false
+    };
+  }
+
+  // Điểm ở giữa - Trung điểm của đoạn thẳng
+  static generateGeometryMidpoint(difficulty: 'easy' | 'medium' | 'hard' = 'medium'): MathProblem {
+    let length, answer;
+    
+    switch (difficulty) {
+      case 'easy':
+        length = this.getRandomInt(4, 20);
+        break;
+      case 'medium':
+        length = this.getRandomInt(10, 40);
+        break;
+      case 'hard':
+        length = this.getRandomInt(20, 80);
+        break;
+      default:
+        length = this.getRandomInt(4, 40);
+    }
+    
+    answer = Math.floor(length / 2);
+    const question = `Đoạn thẳng AB dài ${length}cm. Điểm M là trung điểm của AB. Hỏi AM dài bao nhiêu cm?`;
+    const questionType: QuestionType = Math.random() < 0.5 ? 'multiple_choice' : 'input';
+    
+    return {
+      id: this.generateUniqueId(),
+      type: 'geometry_midpoint',
+      question: question,
+      answer: answer,
+      questionType: questionType,
+      options: questionType === 'multiple_choice' ? this.generateMultipleChoiceOptions(answer) : undefined,
+      isAnswered: false
+    };
+  }
+
+  // Hình tròn: tâm, bán kính, đường kính
+  static generateGeometryCircle(difficulty: 'easy' | 'medium' | 'hard' = 'medium'): MathProblem {
+    const isRadiusToDiameter = Math.random() < 0.5;
+    let radius, diameter, answer;
+    
+    switch (difficulty) {
+      case 'easy':
+        radius = this.getRandomInt(2, 10);
+        break;
+      case 'medium':
+        radius = this.getRandomInt(5, 20);
+        break;
+      case 'hard':
+        radius = this.getRandomInt(10, 40);
+        break;
+      default:
+        radius = this.getRandomInt(2, 20);
+    }
+    
+    if (isRadiusToDiameter) {
+      answer = radius * 2;
+      const question = `Hình tròn có bán kính ${radius}cm. Hỏi đường kính của hình tròn là bao nhiêu cm?`;
+      const questionType: QuestionType = Math.random() < 0.5 ? 'multiple_choice' : 'input';
+      
+      return {
+        id: this.generateUniqueId(),
+        type: 'geometry_circle',
+        question: question,
+        answer: answer,
+        questionType: questionType,
+        options: questionType === 'multiple_choice' ? this.generateMultipleChoiceOptions(answer) : undefined,
+        isAnswered: false
+      };
+    } else {
+      diameter = radius * 2;
+      answer = radius;
+      const question = `Hình tròn có đường kính ${diameter}cm. Hỏi bán kính của hình tròn là bao nhiêu cm?`;
+      const questionType: QuestionType = Math.random() < 0.5 ? 'multiple_choice' : 'input';
+      
+      return {
+        id: this.generateUniqueId(),
+        type: 'geometry_circle',
+        question: question,
+        answer: answer,
+        questionType: questionType,
+        options: questionType === 'multiple_choice' ? this.generateMultipleChoiceOptions(answer) : undefined,
+        isAnswered: false
+      };
+    }
+  }
+
+  // Hình chữ nhật, chu vi, diện tích hình chữ nhật
+  static generateGeometryRectangle(difficulty: 'easy' | 'medium' | 'hard' = 'medium'): MathProblem {
+    const isPerimeter = Math.random() < 0.5;
+    let length, width, answer;
+    
+    switch (difficulty) {
+      case 'easy':
+        length = this.getRandomInt(3, 10);
+        width = this.getRandomInt(2, 8);
+        break;
+      case 'medium':
+        length = this.getRandomInt(5, 20);
+        width = this.getRandomInt(4, 15);
+        break;
+      case 'hard':
+        length = this.getRandomInt(10, 40);
+        width = this.getRandomInt(8, 30);
+        break;
+      default:
+        length = this.getRandomInt(3, 20);
+        width = this.getRandomInt(2, 15);
+    }
+    
+    if (isPerimeter) {
+      answer = 2 * (length + width);
+      const question = `Hình chữ nhật có chiều dài ${length}cm, chiều rộng ${width}cm. Hỏi chu vi hình chữ nhật là bao nhiêu cm?`;
+      const questionType: QuestionType = Math.random() < 0.5 ? 'multiple_choice' : 'input';
+      
+      return {
+        id: this.generateUniqueId(),
+        type: 'geometry_rectangle',
+        question: question,
+        answer: answer,
+        questionType: questionType,
+        options: questionType === 'multiple_choice' ? this.generateMultipleChoiceOptions(answer) : undefined,
+        isAnswered: false
+      };
+    } else {
+      answer = length * width;
+      const question = `Hình chữ nhật có chiều dài ${length}cm, chiều rộng ${width}cm. Hỏi diện tích hình chữ nhật là bao nhiêu cm²?`;
+      const questionType: QuestionType = Math.random() < 0.5 ? 'multiple_choice' : 'input';
+      
+      return {
+        id: this.generateUniqueId(),
+        type: 'geometry_rectangle',
+        question: question,
+        answer: answer,
+        questionType: questionType,
+        options: questionType === 'multiple_choice' ? this.generateMultipleChoiceOptions(answer) : undefined,
+        isAnswered: false
+      };
+    }
+  }
+
+  // Hình vuông, chu vi, diện tích hình vuông
+  static generateGeometrySquare(difficulty: 'easy' | 'medium' | 'hard' = 'medium'): MathProblem {
+    const isPerimeter = Math.random() < 0.5;
+    let side, answer;
+    
+    switch (difficulty) {
+      case 'easy':
+        side = this.getRandomInt(3, 10);
+        break;
+      case 'medium':
+        side = this.getRandomInt(5, 20);
+        break;
+      case 'hard':
+        side = this.getRandomInt(10, 40);
+        break;
+      default:
+        side = this.getRandomInt(3, 20);
+    }
+    
+    if (isPerimeter) {
+      answer = 4 * side;
+      const question = `Hình vuông có cạnh ${side}cm. Hỏi chu vi hình vuông là bao nhiêu cm?`;
+      const questionType: QuestionType = Math.random() < 0.5 ? 'multiple_choice' : 'input';
+      
+      return {
+        id: this.generateUniqueId(),
+        type: 'geometry_square',
+        question: question,
+        answer: answer,
+        questionType: questionType,
+        options: questionType === 'multiple_choice' ? this.generateMultipleChoiceOptions(answer) : undefined,
+        isAnswered: false
+      };
+    } else {
+      answer = side * side;
+      const question = `Hình vuông có cạnh ${side}cm. Hỏi diện tích hình vuông là bao nhiêu cm²?`;
+      const questionType: QuestionType = Math.random() < 0.5 ? 'multiple_choice' : 'input';
+      
+      return {
+        id: this.generateUniqueId(),
+        type: 'geometry_square',
+        question: question,
+        answer: answer,
+        questionType: questionType,
+        options: questionType === 'multiple_choice' ? this.generateMultipleChoiceOptions(answer) : undefined,
+        isAnswered: false
+      };
+    }
+  }
+
   static generateProblem(type: ProblemType, difficulty: 'easy' | 'medium' | 'hard' = 'medium'): MathProblem {
     switch (type) {
       case 'multiplication_table':
@@ -453,6 +796,20 @@ export class ProblemGenerator {
         return this.generateThreeDigitMultiply(difficulty);
       case 'three_digit_divide':
         return this.generateThreeDigitDivide(difficulty);
+      case 'word_problem_more_less':
+        return this.generateWordProblemMoreLess(difficulty);
+      case 'word_problem_multiply_divide':
+        return this.generateWordProblemMultiplyDivide(difficulty);
+      case 'word_problem_unit_conversion':
+        return this.generateWordProblemUnitConversion(difficulty);
+      case 'geometry_midpoint':
+        return this.generateGeometryMidpoint(difficulty);
+      case 'geometry_circle':
+        return this.generateGeometryCircle(difficulty);
+      case 'geometry_rectangle':
+        return this.generateGeometryRectangle(difficulty);
+      case 'geometry_square':
+        return this.generateGeometrySquare(difficulty);
       default:
         return this.generateAddition(difficulty);
     }
@@ -490,6 +847,20 @@ export class ProblemGenerator {
   private static createNormalizedQuestionKey(problem: MathProblem): string {
     // Extract numbers from question string and normalize for commutative operations
     const question = problem.question;
+    const type = problem.type;
+    
+    // Handle word problems and geometry by extracting key numbers
+    if (type === 'word_problem_more_less' || type === 'word_problem_multiply_divide' || type === 'word_problem_unit_conversion') {
+      // Extract all numbers from the question and sort them to create a normalized key
+      const numbers = question.match(/\d+/g)?.map(n => parseInt(n)).sort((a, b) => a - b) || [];
+      return `${type}:${numbers.join(',')}`;
+    }
+    
+    if (type === 'geometry_midpoint' || type === 'geometry_circle' || type === 'geometry_rectangle' || type === 'geometry_square') {
+      // Extract all numbers from the question and sort them to create a normalized key
+      const numbers = question.match(/\d+/g)?.map(n => parseInt(n)).sort((a, b) => a - b) || [];
+      return `${type}:${numbers.join(',')}`;
+    }
     
     if (question.includes('×') || question.includes('*')) {
       // For multiplication, normalize by putting smaller number first

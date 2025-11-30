@@ -5,7 +5,6 @@ interface ProblemDisplayProps {
   problem: MathProblem;
   questionNumber: number;
   totalQuestions: number;
-  showAnswer?: boolean;
   showResult?: boolean;
 }
 
@@ -13,7 +12,6 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   problem, 
   questionNumber,
   totalQuestions,
-  showAnswer = false,
   showResult = false
 }) => {
   const getTypeLabel = (type: string) => {
@@ -29,6 +27,13 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
       case 'two_digit_divide': return 'Chia 2 chữ số';
       case 'three_digit_multiply': return 'Nhân 3 chữ số';
       case 'three_digit_divide': return 'Chia 3 chữ số';
+      case 'word_problem_more_less': return 'Toán có lời văn: Hơn kém';
+      case 'word_problem_multiply_divide': return 'Toán có lời văn: Gấp/Giảm';
+      case 'word_problem_unit_conversion': return 'Toán có lời văn: Rút đơn vị';
+      case 'geometry_midpoint': return 'Hình học: Trung điểm';
+      case 'geometry_circle': return 'Hình học: Hình tròn';
+      case 'geometry_rectangle': return 'Hình học: Hình chữ nhật';
+      case 'geometry_square': return 'Hình học: Hình vuông';
       default: return 'Toán học';
     }
   };
@@ -36,6 +41,14 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   const getQuestionTypeLabel = (questionType: string) => {
     return questionType === 'multiple_choice' ? 'Trắc nghiệm' : 'Tự luận';
   };
+
+  // Check if this is a word problem (toán có lời văn) or geometry problem
+  const isWordProblem = problem.type.startsWith('word_problem');
+  const isGeometryProblem = problem.type.startsWith('geometry');
+  const needsSmallerFont = isWordProblem || isGeometryProblem;
+  
+  // Determine font size based on problem type
+  const questionFontSize = needsSmallerFont ? 'text-2xl md:text-3xl' : 'text-4xl md:text-6xl';
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -76,34 +89,51 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
       
       {/* Question */}
       <div className="text-center mb-8">
-        <div className="text-6xl font-bold text-gray-800 mb-6">
-          {problem.isAnswered ? 
-            problem.question.replace('?', problem.userAnswer?.toString() || '?') : 
-            problem.question
-          }
+        <div className={`${questionFontSize} font-bold text-gray-800 mb-6 ${needsSmallerFont ? 'leading-relaxed' : ''}`}>
+          {problem.question}
         </div>
-        
-        {showAnswer && (
-          <div className={`text-4xl font-bold ${problem.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-            = {problem.answer}
-          </div>
-        )}
-        
-        {showResult && problem.isAnswered && (
-          <div className={`text-2xl font-semibold ${problem.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-            {problem.isCorrect ? '🎉 Đúng rồi!' : '😔 Sai rồi, cố gắng nhé!'}
-          </div>
-        )}
-        
-        {/* Fireworks Animation for Correct Answer */}
-        {showResult && problem.isAnswered && problem.isCorrect && (
-          <div className="fireworks-animation">
-            <div className="text-4xl animate-bounce">🎆</div>
-            <div className="text-3xl animate-pulse">✨</div>
-            <div className="text-2xl animate-ping">🎊</div>
-          </div>
-        )}
       </div>
+
+      {/* Answer Display Block - Separate from question */}
+      {problem.isAnswered && (
+        <div className="mt-6 pt-6 border-t-2 border-gray-200">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 space-y-4">
+            {/* User's Answer */}
+            <div className="flex items-center justify-center space-x-4">
+              <span className="text-lg font-medium text-gray-700">Đáp án của bạn:</span>
+              <span className={`text-3xl md:text-4xl font-bold ${problem.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                {problem.userAnswer}
+              </span>
+            </div>
+            
+            {/* Correct Answer (if wrong) */}
+            {!problem.isCorrect && (
+              <div className="flex items-center justify-center space-x-4 pt-2 border-t border-gray-300">
+                <span className="text-lg font-medium text-gray-700">Đáp án đúng:</span>
+                <span className="text-3xl md:text-4xl font-bold text-blue-600">
+                  {problem.answer}
+                </span>
+              </div>
+            )}
+            
+            {/* Result Message */}
+            {showResult && (
+              <div className={`text-xl md:text-2xl font-semibold text-center pt-2 ${problem.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                {problem.isCorrect ? '🎉 Đúng rồi!' : '😔 Sai rồi, cố gắng nhé!'}
+              </div>
+            )}
+            
+            {/* Fireworks Animation for Correct Answer */}
+            {showResult && problem.isCorrect && (
+              <div className="flex justify-center items-center space-x-2 pt-2">
+                <div className="text-3xl animate-bounce">🎆</div>
+                <div className="text-2xl animate-pulse">✨</div>
+                <div className="text-xl animate-ping">🎊</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

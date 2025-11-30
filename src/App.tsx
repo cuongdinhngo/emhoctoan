@@ -297,7 +297,7 @@ function App() {
                 />
                 
                 
-                {!sessionData.problems[currentProblemIndex].isAnswered ? (
+                {!sessionData.problems[currentProblemIndex].isAnswered && (
                   sessionData.problems[currentProblemIndex].questionType === 'multiple_choice' ? (
                     <MultipleChoiceInput
                       options={sessionData.problems[currentProblemIndex].options || []}
@@ -309,15 +309,6 @@ function App() {
                       onSubmit={handleAnswerSubmit}
                     />
                   )
-                ) : (
-                  <div className="text-center p-6 bg-gray-50 rounded-xl">
-                    <div className="text-lg text-gray-600">
-                      {sessionData.problems[currentProblemIndex].isCorrect ? '✅ Đã trả lời đúng' : '❌ Đã trả lời sai'}
-                    </div>
-                    <div className="text-sm text-gray-500 mt-2">
-                      Đáp án của bạn: {sessionData.problems[currentProblemIndex].userAnswer}
-                    </div>
-                  </div>
                 )}
               </div>
             </div>
