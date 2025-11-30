@@ -89,9 +89,14 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
 
         {/* Problem Types */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Loại bài tập *
-          </label>
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-medium text-gray-700">
+              Loại bài tập *
+            </label>
+            <span className="text-sm font-semibold text-blue-600">
+              {enabledTypes.length} / {problemTypes.length} đã chọn
+            </span>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {problemTypes.map((type) => (
               <label key={type.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
