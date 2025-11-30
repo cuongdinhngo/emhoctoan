@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ProblemSettings } from '../types';
+import { PROBLEM_TYPES_CONFIG } from '../constants/problemTypes';
 
 interface StudentSetupProps {
   onStart: (settings: ProblemSettings) => void;
@@ -14,26 +15,7 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
   );
   const [difficulty, setDifficulty] = useState(initialSettings?.difficulty || 'medium');
 
-  const problemTypes = [
-    { id: 'addition', label: 'Phép cộng', description: 'Cộng trong phạm vi 1000' },
-    { id: 'subtraction', label: 'Phép trừ', description: 'Trừ trong phạm vi 1000' },
-    { id: 'multiplication_table', label: 'Bảng nhân', description: 'Nhân từ 1 đến 9' },
-    { id: 'division_table', label: 'Bảng chia', description: 'Chia từ 1 đến 9' },
-    { id: 'multiplication', label: 'Phép nhân', description: 'Nhân trong phạm vi 100' },
-    { id: 'division', label: 'Phép chia', description: 'Chia trong phạm vi 100' },
-    { id: 'two_digit_multiply', label: 'Nhân 2 chữ số', description: 'Nhân số có hai chữ số với số có một chữ số' },
-    { id: 'division_with_remainder', label: 'Chia có dư', description: 'Phép chia hết, phép chia có dư' },
-    { id: 'two_digit_divide', label: 'Chia 2 chữ số', description: 'Chia số có hai chữ số cho số có một chữ số' },
-    { id: 'three_digit_multiply', label: 'Nhân 3 chữ số', description: 'Nhân số có ba chữ số với số có một chữ số' },
-    { id: 'three_digit_divide', label: 'Chia 3 chữ số', description: 'Chia số có ba chữ số cho số có một chữ số' },
-    { id: 'word_problem_more_less', label: 'Toán có lời văn: Hơn kém', description: 'Dạng toán về hơn kém số đơn vị' },
-    { id: 'word_problem_multiply_divide', label: 'Toán có lời văn: Gấp/Giảm', description: 'Dạng toán về gấp số lần, giảm số lần' },
-    { id: 'word_problem_unit_conversion', label: 'Toán có lời văn: Rút đơn vị', description: 'Dạng toán liên quan đến rút về đơn vị' },
-    { id: 'geometry_midpoint', label: 'Hình học: Trung điểm', description: 'Điểm ở giữa - Trung điểm của đoạn thẳng' },
-    { id: 'geometry_circle', label: 'Hình học: Hình tròn', description: 'Hình tròn: tâm, bán kính, đường kính' },
-    { id: 'geometry_rectangle', label: 'Hình học: Hình chữ nhật', description: 'Hình chữ nhật, chu vi, diện tích' },
-    { id: 'geometry_square', label: 'Hình học: Hình vuông', description: 'Hình vuông, chu vi, diện tích' }
-  ];
+  const problemTypes = PROBLEM_TYPES_CONFIG;
 
   const handleTypeToggle = (typeId: string) => {
     setEnabledTypes(prev => 

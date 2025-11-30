@@ -1,5 +1,6 @@
 import React from 'react';
 import { MathProblem } from '../types';
+import { PROBLEM_TYPE_LABELS } from '../constants/problemTypes';
 
 interface ProblemDisplayProps {
   problem: MathProblem;
@@ -15,27 +16,7 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   showResult = false
 }) => {
   const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'addition': return 'Phép cộng';
-      case 'subtraction': return 'Phép trừ';
-      case 'multiplication': return 'Phép nhân';
-      case 'division': return 'Phép chia';
-      case 'multiplication_table': return 'Bảng nhân';
-      case 'division_table': return 'Bảng chia';
-      case 'two_digit_multiply': return 'Nhân 2 chữ số';
-      case 'division_with_remainder': return 'Chia có dư';
-      case 'two_digit_divide': return 'Chia 2 chữ số';
-      case 'three_digit_multiply': return 'Nhân 3 chữ số';
-      case 'three_digit_divide': return 'Chia 3 chữ số';
-      case 'word_problem_more_less': return 'Toán có lời văn: Hơn kém';
-      case 'word_problem_multiply_divide': return 'Toán có lời văn: Gấp/Giảm';
-      case 'word_problem_unit_conversion': return 'Toán có lời văn: Rút đơn vị';
-      case 'geometry_midpoint': return 'Hình học: Trung điểm';
-      case 'geometry_circle': return 'Hình học: Hình tròn';
-      case 'geometry_rectangle': return 'Hình học: Hình chữ nhật';
-      case 'geometry_square': return 'Hình học: Hình vuông';
-      default: return 'Toán học';
-    }
+    return PROBLEM_TYPE_LABELS[type as keyof typeof PROBLEM_TYPE_LABELS] || 'Toán học';
   };
 
   const getQuestionTypeLabel = (questionType: string) => {
