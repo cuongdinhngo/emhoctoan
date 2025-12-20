@@ -94,21 +94,56 @@ function App() {
     setSessionData(updatedSessionData);
     StorageManager.saveSession(updatedSessionData);
 
-    // Auto-advance to next question after delay
+    // Auto-advance to next question after delay (but NOT on last question)
     setTimeout(() => {
       if (currentProblemIndex < sessionData.problems.length - 1) {
         setCurrentProblemIndex(currentProblemIndex + 1);
-      } else {
-        // Test completed
-        const completedSessionData: SessionData = {
-          ...updatedSessionData,
-          isCompleted: true
-        };
-        setSessionData(completedSessionData);
-        StorageManager.saveSession(completedSessionData);
-        StorageManager.updateProgress(newScore);
-        setAppState('results');
       }
+      // On last question, don't auto-submit - let student review and submit manually
+    }, 2000);
+  };
+
+  // Handle text answer submission (for text-based MCQ like clock questions)
+  const handleTextAnswerSubmit = (userTextAnswer: string) => {
+    if (!sessionData) return;
+
+    const currentProblem = sessionData.problems[currentProblemIndex];
+
+    // For text MCQ, compare with textAnswer directly
+    const isCorrect = userTextAnswer === currentProblem.textAnswer;
+
+    // Update the problem
+    const updatedProblems = [...sessionData.problems];
+    updatedProblems[currentProblemIndex] = {
+      ...currentProblem,
+      userTextAnswer,
+      isCorrect,
+      isAnswered: true
+    };
+
+    // Update score
+    const newScore: ScoreData = {
+      correct: sessionData.currentScore.correct + (isCorrect ? 1 : 0),
+      total: sessionData.currentScore.total + 1,
+      streak: isCorrect ? sessionData.currentScore.streak + 1 : 0,
+      bestStreak: Math.max(sessionData.currentScore.bestStreak, isCorrect ? sessionData.currentScore.streak + 1 : sessionData.currentScore.streak)
+    };
+
+    const updatedSessionData: SessionData = {
+      ...sessionData,
+      currentScore: newScore,
+      problems: updatedProblems
+    };
+
+    setSessionData(updatedSessionData);
+    StorageManager.saveSession(updatedSessionData);
+
+    // Auto-advance to next question after delay (but NOT on last question)
+    setTimeout(() => {
+      if (currentProblemIndex < sessionData.problems.length - 1) {
+        setCurrentProblemIndex(currentProblemIndex + 1);
+      }
+      // On last question, don't auto-submit - let student review and submit manually
     }, 2000);
   };
 
@@ -119,6 +154,23 @@ function App() {
       setCurrentProblemIndex(questionIndex);
     }
   };
+
+  // Submit quiz - called when student clicks "Nộp bài"
+  const submitQuiz = () => {
+    if (!sessionData) return;
+
+    const completedSessionData: SessionData = {
+      ...sessionData,
+      isCompleted: true
+    };
+    setSessionData(completedSessionData);
+    StorageManager.saveSession(completedSessionData);
+    StorageManager.updateProgress(sessionData.currentScore);
+    setAppState('results');
+  };
+
+  // Check if all questions are answered
+  const allQuestionsAnswered = sessionData?.problems.every(p => p.isAnswered) ?? false;
 
   // Review specific question
   const reviewQuestion = (questionId: string) => {
@@ -297,18 +349,50 @@ function App() {
                 />
                 
                 
-                {!sessionData.problems[currentProblemIndex].isAnswered && (
-                  sessionData.problems[currentProblemIndex].questionType === 'multiple_choice' ? (
-                    <MultipleChoiceInput
-                      options={sessionData.problems[currentProblemIndex].options || []}
-                      correctAnswer={sessionData.problems[currentProblemIndex].answer}
-                      onAnswerSelect={handleAnswerSubmit}
-                    />
-                  ) : (
-                    <AnswerInput 
-                      onSubmit={handleAnswerSubmit}
-                    />
-                  )
+                {!sessionData.problems[currentProblemIndex].isAnswered && (() => {
+                  const currentProblem = sessionData.problems[currentProblemIndex];
+                  const hasTextOptions = currentProblem.textOptions && currentProblem.textOptions.length > 0;
+
+                  if (currentProblem.questionType === 'multiple_choice') {
+                    if (hasTextOptions) {
+                      // Text-based MCQ (e.g., clock questions)
+                      return (
+                        <MultipleChoiceInput
+                          textOptions={currentProblem.textOptions}
+                          correctTextAnswer={currentProblem.textAnswer}
+                          onTextAnswerSelect={handleTextAnswerSubmit}
+                        />
+                      );
+                    } else {
+                      // Numeric MCQ
+                      return (
+                        <MultipleChoiceInput
+                          options={currentProblem.options || []}
+                          correctAnswer={currentProblem.answer}
+                          onAnswerSelect={handleAnswerSubmit}
+                        />
+                      );
+                    }
+                  } else {
+                    return (
+                      <AnswerInput
+                        onSubmit={handleAnswerSubmit}
+                      />
+                    );
+                  }
+                })()}
+
+                {/* Submit Quiz Button - appears when all questions are answered */}
+                {allQuestionsAnswered && (
+                  <div className="mt-6">
+                    <button
+                      onClick={submitQuiz}
+                      className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-xl text-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                    >
+                      <span>✅</span>
+                      <span>Nộp bài</span>
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

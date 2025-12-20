@@ -2,20 +2,30 @@ import React, { useState, useEffect } from 'react';
 
 interface AnswerInputProps {
   onSubmit: (answer: number) => void;
+  onTextSubmit?: (answer: string) => void;
   disabled?: boolean;
   autoFocus?: boolean;
   userAnswer?: number;
+  userTextAnswer?: string;
   showResult?: boolean;
+  isTextInput?: boolean;
 }
 
-export const AnswerInput: React.FC<AnswerInputProps> = ({ 
-  onSubmit, 
-  disabled = false, 
+export const AnswerInput: React.FC<AnswerInputProps> = ({
+  onSubmit,
+  onTextSubmit,
+  disabled = false,
   autoFocus = true,
   userAnswer,
-  showResult = false
+  userTextAnswer,
+  showResult = false,
+  isTextInput = false
 }) => {
-  const [input, setInput] = useState(userAnswer?.toString() || '');
+  const [input, setInput] = useState(
+    isTextInput
+      ? (userTextAnswer || '')
+      : (userAnswer?.toString() || '')
+  );
 
   useEffect(() => {
     if (autoFocus && !disabled) {
@@ -25,16 +35,24 @@ export const AnswerInput: React.FC<AnswerInputProps> = ({
   }, [autoFocus, disabled]);
 
   useEffect(() => {
-    if (userAnswer !== undefined) {
+    if (isTextInput && userTextAnswer !== undefined) {
+      setInput(userTextAnswer);
+    } else if (!isTextInput && userAnswer !== undefined) {
       setInput(userAnswer.toString());
     }
-  }, [userAnswer]);
+  }, [userAnswer, userTextAnswer, isTextInput]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const answer = parseInt(input.trim());
-    if (!isNaN(answer)) {
-      onSubmit(answer);
+    if (isTextInput && onTextSubmit) {
+      if (input.trim()) {
+        onTextSubmit(input.trim());
+      }
+    } else {
+      const answer = parseInt(input.trim());
+      if (!isNaN(answer)) {
+        onSubmit(answer);
+      }
     }
   };
 
@@ -45,7 +63,7 @@ export const AnswerInput: React.FC<AnswerInputProps> = ({
   };
 
   const getInputStyle = () => {
-    if (showResult && userAnswer !== undefined) {
+    if (showResult && (userAnswer !== undefined || userTextAnswer !== undefined)) {
       return 'border-green-500 bg-green-50';
     }
     return 'border-gray-300 focus:border-blue-500';
@@ -56,16 +74,16 @@ export const AnswerInput: React.FC<AnswerInputProps> = ({
       <div className="relative">
         <input
           id="answer-input"
-          type="number"
+          type={isTextInput ? 'text' : 'number'}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={handleKeyPress}
           disabled={disabled}
-          placeholder="Nhập đáp án..."
+          placeholder={isTextInput ? 'Ví dụ: 9 giờ 30 phút' : 'Nhập đáp án...'}
           className={`w-full px-6 py-4 text-2xl text-center border-2 rounded-xl focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed ${getInputStyle()}`}
         />
       </div>
-      
+
       {!showResult && (
         <button
           type="submit"

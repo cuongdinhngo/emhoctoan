@@ -1,6 +1,7 @@
 import React from 'react';
 import { MathProblem } from '../types';
 import { PROBLEM_TYPE_LABELS } from '../constants/problemTypes';
+import { AnalogClock } from './AnalogClock';
 
 interface ProblemDisplayProps {
   problem: MathProblem;
@@ -23,12 +24,16 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
     return questionType === 'multiple_choice' ? 'Trắc nghiệm' : 'Tự luận';
   };
 
-  // Check if this is a word problem (toán có lời văn) or geometry problem
-  const isWordProblem = problem.type.startsWith('word_problem');
-  const isGeometryProblem = problem.type.startsWith('geometry');
-  const needsSmallerFont = isWordProblem || isGeometryProblem;
-  
-  // Determine font size based on problem type
+  // Parse clock data from question if present
+  const clockMatch = problem.question.match(/\[CLOCK:(\d+):(\d+)\]/);
+  const clockData = clockMatch ? { hour: parseInt(clockMatch[1]), minute: parseInt(clockMatch[2]) } : null;
+  const displayQuestion = clockData ? problem.question.replace(/\[CLOCK:\d+:\d+\]\s*/, '') : problem.question;
+
+  // Check if this question has long text that needs smaller font
+  const isLongQuestion = displayQuestion.length > 50;
+  const needsSmallerFont = isLongQuestion;
+
+  // Determine font size based on question length
   const questionFontSize = needsSmallerFont ? 'text-2xl md:text-3xl' : 'text-4xl md:text-6xl';
 
   return (
@@ -44,6 +49,12 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             <span className="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
               {getTypeLabel(problem.type)}
             </span>
+            {/* Original type badge for semester1 review */}
+            {problem.originalType && (
+              <span className="inline-block bg-purple-100 text-purple-700 text-sm font-medium px-3 py-1 rounded-full">
+                {getTypeLabel(problem.originalType)}
+              </span>
+            )}
             <span className="inline-block bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
               {getQuestionTypeLabel(problem.questionType)}
             </span>
@@ -57,10 +68,16 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             Câu {questionNumber}/{totalQuestions}
           </div>
           {/* Second Row: Question Type & Problem Type */}
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
               {getTypeLabel(problem.type)}
             </span>
+            {/* Original type badge for semester1 review */}
+            {problem.originalType && (
+              <span className="inline-block bg-purple-100 text-purple-700 text-sm font-medium px-3 py-1 rounded-full">
+                {getTypeLabel(problem.originalType)}
+              </span>
+            )}
             <span className="inline-block bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
               {getQuestionTypeLabel(problem.questionType)}
             </span>
@@ -70,8 +87,14 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
       
       {/* Question */}
       <div className="text-center mb-8">
+        {/* Clock display for clock reading questions */}
+        {clockData && (
+          <div className="mb-6">
+            <AnalogClock hour={clockData.hour} minute={clockData.minute} size={200} />
+          </div>
+        )}
         <div className={`${questionFontSize} font-bold text-gray-800 mb-6 ${needsSmallerFont ? 'leading-relaxed' : ''}`}>
-          {problem.question}
+          {displayQuestion}
         </div>
       </div>
 
@@ -83,16 +106,16 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             <div className="flex items-center justify-center space-x-4">
               <span className="text-lg font-medium text-gray-700">Đáp án của bạn:</span>
               <span className={`text-3xl md:text-4xl font-bold ${problem.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                {problem.userAnswer}
+                {clockData ? problem.userTextAnswer : problem.userAnswer}
               </span>
             </div>
-            
+
             {/* Correct Answer (if wrong) */}
             {!problem.isCorrect && (
               <div className="flex items-center justify-center space-x-4 pt-2 border-t border-gray-300">
                 <span className="text-lg font-medium text-gray-700">Đáp án đúng:</span>
                 <span className="text-3xl md:text-4xl font-bold text-blue-600">
-                  {problem.answer}
+                  {clockData ? problem.textAnswer : problem.answer}
                 </span>
               </div>
             )}

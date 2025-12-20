@@ -1,6 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProblemSettings } from '../types';
 import { PROBLEM_TYPES_CONFIG } from '../constants/problemTypes';
+
+// Types included in Semester 1 Review
+const SEMESTER_1_TYPES = [
+  { label: 'Nhân 2 chữ số', type: 'two_digit_multiply' },
+  { label: 'Chia 2 chữ số', type: 'two_digit_divide' },
+  { label: 'Nhân 3 chữ số', type: 'three_digit_multiply' },
+  { label: 'Chia 3 chữ số', type: 'three_digit_divide' },
+  { label: 'Chia có dư', type: 'division_with_remainder' },
+  { label: 'Toán có lời văn: Hơn kém', type: 'word_problem_more_less' },
+  { label: 'Toán có lời văn: Gấp/Giảm', type: 'word_problem_multiply_divide' },
+  { label: 'Toán có lời văn: Chia có dư', type: 'word_problem_division_remainder' },
+  { label: 'Xem đồng hồ', type: 'review_clock_reading' },
+  { label: 'Tìm 1/n của số', type: 'review_fraction_of_number' },
+  { label: 'Đặt tính rồi tính', type: 'review_written_calculation' },
+  { label: 'Đường gấp khúc', type: 'review_broken_line' },
+  { label: 'Điền số vào ô trống', type: 'review_chain_calculation' },
+  { label: 'Tìm số còn thiếu', type: 'review_fill_blank' }
+];
+const MIN_SEMESTER_1_QUESTIONS = SEMESTER_1_TYPES.length; // 14
 
 interface StudentSetupProps {
   onStart: (settings: ProblemSettings) => void;
@@ -14,15 +33,54 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
     initialSettings?.enabledTypes || ['addition', 'subtraction', 'multiplication_table', 'division_table']
   );
   const [difficulty, setDifficulty] = useState(initialSettings?.difficulty || 'medium');
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [isReviewExpanded, setIsReviewExpanded] = useState(true);
+  const [showSemester1Modal, setShowSemester1Modal] = useState(false);
 
-  const problemTypes = PROBLEM_TYPES_CONFIG;
+  // Filter problem types by category
+  const grade3Types = PROBLEM_TYPES_CONFIG.filter(t => !t.category || t.category === 'grade3');
+  const reviewTypes = PROBLEM_TYPES_CONFIG.filter(t => t.category === 'review');
 
+  // Count selected types per category
+  const selectedGrade3Count = grade3Types.filter(t => enabledTypes.includes(t.id)).length;
+  const selectedReviewCount = reviewTypes.filter(t => enabledTypes.includes(t.id)).length;
+
+  // Check if semester 1 review is selected
+  const isSemester1Selected = enabledTypes.includes('review_semester_1');
+
+  // Filter available quantities based on selection
+  const availableQuantities = isSemester1Selected
+    ? [15, 20, 25, 30, 50]
+    : [10, 15, 20, 25, 30, 50];
+
+  // Auto-adjust question quantity if semester1 is selected and current quantity is too low
+  useEffect(() => {
+    if (isSemester1Selected && questionQuantity < MIN_SEMESTER_1_QUESTIONS) {
+      setQuestionQuantity(15); // Minimum available for semester1
+    }
+  }, [isSemester1Selected, questionQuantity]);
+
+  // Handle grade3 type toggle - clears any review selection
   const handleTypeToggle = (typeId: string) => {
-    setEnabledTypes(prev => 
-      prev.includes(typeId) 
-        ? prev.filter(t => t !== typeId)
-        : [...prev, typeId]
-    );
+    setEnabledTypes(prev => {
+      // Remove any review types when selecting grade3 types
+      const withoutReview = prev.filter(t => !reviewTypes.some(r => r.id === t));
+
+      if (withoutReview.includes(typeId)) {
+        return withoutReview.filter(t => t !== typeId);
+      } else {
+        return [...withoutReview, typeId];
+      }
+    });
+  };
+
+  // Handle review type selection - clears all grade3 and sets only selected review
+  const handleReviewSelect = (typeId: string) => {
+    setEnabledTypes([typeId]);
+    setIsExpanded(false); // Collapse grade3 panel
+    if (typeId === 'review_semester_1') {
+      setShowSemester1Modal(true);
+    }
   };
 
   const handleStart = () => {
@@ -69,9 +127,14 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Số câu hỏi
+            {isSemester1Selected && (
+              <span className="text-purple-600 text-xs ml-2">
+                (Tối thiểu {MIN_SEMESTER_1_QUESTIONS} câu)
+              </span>
+            )}
           </label>
           <div className="grid grid-cols-2 gap-2">
-            {[10, 15, 20, 25, 30, 50].map((quantity) => (
+            {availableQuantities.map((quantity) => (
               <button
                 key={quantity}
                 onClick={() => setQuestionQuantity(quantity)}
@@ -87,31 +150,102 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
           </div>
         </div>
 
-        {/* Problem Types */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <label className="block text-sm font-medium text-gray-700">
-              Loại bài tập *
-            </label>
+        {/* Problem Types - Toán lớp 3 Expansion Panel */}
+        <div className="border rounded-xl overflow-hidden">
+          {/* Panel Header */}
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <svg
+                className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+              <span className="font-medium text-gray-800">Toán lớp 3</span>
+            </div>
             <span className="text-sm font-semibold text-blue-600">
-              {enabledTypes.length} / {problemTypes.length} đã chọn
+              {selectedGrade3Count} / {grade3Types.length} đã chọn
             </span>
+          </button>
+
+          {/* Panel Content */}
+          <div
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t">
+              {grade3Types.map((type) => (
+                <label key={type.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={enabledTypes.includes(type.id)}
+                    onChange={() => handleTypeToggle(type.id)}
+                    className="mr-3 h-4 w-4 text-blue-600"
+                  />
+                  <div>
+                    <div className="font-medium text-gray-800">{type.label}</div>
+                    <div className="text-sm text-gray-500">{type.description}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {problemTypes.map((type) => (
-              <label key={type.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={enabledTypes.includes(type.id)}
-                  onChange={() => handleTypeToggle(type.id)}
-                  className="mr-3 h-4 w-4 text-blue-600"
-                />
-                <div>
-                  <div className="font-medium text-gray-800">{type.label}</div>
-                  <div className="text-sm text-gray-500">{type.description}</div>
-                </div>
-              </label>
-            ))}
+        </div>
+
+        {/* Problem Types - Ôn tập Expansion Panel */}
+        <div className="border rounded-xl overflow-hidden">
+          {/* Panel Header */}
+          <button
+            type="button"
+            onClick={() => setIsReviewExpanded(!isReviewExpanded)}
+            className="w-full flex items-center justify-between p-4 bg-purple-50 hover:bg-purple-100 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <svg
+                className={`w-5 h-5 text-purple-600 transition-transform duration-300 ${isReviewExpanded ? 'rotate-180' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+              <span className="font-medium text-purple-800">Ôn tập</span>
+            </div>
+            <span className="text-sm font-semibold text-purple-600">
+              {selectedReviewCount} / {reviewTypes.length} đã chọn
+            </span>
+          </button>
+
+          {/* Panel Content */}
+          <div
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              isReviewExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t">
+              {reviewTypes.map((type) => (
+                <label key={type.id} className="flex items-center p-3 border rounded-lg hover:bg-purple-50 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="review-type"
+                    checked={enabledTypes.includes(type.id)}
+                    onChange={() => handleReviewSelect(type.id)}
+                    className="mr-3 h-4 w-4 text-purple-600"
+                  />
+                  <div>
+                    <div className="font-medium text-gray-800">{type.label}</div>
+                    <div className="text-sm text-gray-500">{type.description}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -152,6 +286,36 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
           🚀 Bắt đầu kiểm tra
         </button>
       </div>
+
+      {/* Semester 1 Types Modal */}
+      {showSemester1Modal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-purple-800 mb-4">
+              Ôn tập Học kỳ 1 bao gồm:
+            </h2>
+            <ul className="space-y-2 mb-6">
+              {SEMESTER_1_TYPES.map((item, index) => (
+                <li key={index} className="flex items-center text-gray-700">
+                  <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm mr-3">
+                    {index + 1}
+                  </span>
+                  {item.label}
+                </li>
+              ))}
+            </ul>
+            <p className="text-sm text-gray-500 mb-4">
+              Tối thiểu {MIN_SEMESTER_1_QUESTIONS} câu hỏi để đảm bảo mỗi dạng có ít nhất 1 câu.
+            </p>
+            <button
+              onClick={() => setShowSemester1Modal(false)}
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-xl"
+            >
+              Đã hiểu
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
