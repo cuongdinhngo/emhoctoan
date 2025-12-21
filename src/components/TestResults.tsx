@@ -1,5 +1,6 @@
-import React from 'react';
-import { SessionData } from '../types';
+import React, { useMemo } from 'react';
+import { SessionData, ProblemType } from '../types';
+import { PROBLEM_TYPE_LABELS } from '../constants/problemTypes';
 
 interface TestResultsProps {
   sessionData: SessionData;
@@ -16,7 +17,34 @@ export const TestResults: React.FC<TestResultsProps> = ({
 }) => {
   const { problems, currentScore, settings } = sessionData;
   const percentage = Math.round((currentScore.correct / currentScore.total) * 100);
-  
+
+  // Calculate per-type statistics
+  const typeStats = useMemo(() => {
+    const stats: Record<string, { total: number; correct: number }> = {};
+
+    problems.forEach(problem => {
+      // Use originalType for review_semester_1, otherwise use type
+      const actualType = problem.originalType || problem.type;
+
+      if (!stats[actualType]) {
+        stats[actualType] = { total: 0, correct: 0 };
+      }
+      stats[actualType].total++;
+      if (problem.isCorrect) {
+        stats[actualType].correct++;
+      }
+    });
+
+    return Object.entries(stats)
+      .map(([type, data]) => ({
+        type,
+        label: PROBLEM_TYPE_LABELS[type as ProblemType] || type,
+        ...data,
+        percentage: Math.round((data.correct / data.total) * 100)
+      }))
+      .sort((a, b) => b.total - a.total); // Sort by most questions
+  }, [problems]);
+
   const getGradeMessage = (percentage: number) => {
     if (percentage >= 90) return { message: 'Xuất sắc! 🌟', color: 'text-green-600' };
     if (percentage >= 80) return { message: 'Giỏi lắm! 👏', color: 'text-blue-600' };
@@ -55,6 +83,36 @@ export const TestResults: React.FC<TestResultsProps> = ({
       {/* Grade Message */}
       <div className={`text-center text-2xl font-bold mb-8 ${gradeInfo.color}`}>
         {gradeInfo.message}
+      </div>
+
+      {/* Question Type Statistics */}
+      <div className="mb-8">
+        <h3 className="text-xl font-bold text-gray-800 mb-4">Thống kê theo dạng bài</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {typeStats.map(stat => (
+            <div key={stat.type} className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-medium text-gray-700">{stat.label}</span>
+                <span className={`font-bold ${
+                  stat.percentage >= 80 ? 'text-green-600' :
+                  stat.percentage >= 60 ? 'text-yellow-600' : 'text-red-600'
+                }`}>
+                  {stat.correct}/{stat.total} ({stat.percentage}%)
+                </span>
+              </div>
+              {/* Progress bar */}
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full ${
+                    stat.percentage >= 80 ? 'bg-green-500' :
+                    stat.percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}
+                  style={{ width: `${stat.percentage}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Question Review */}

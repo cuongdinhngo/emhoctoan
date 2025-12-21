@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ProblemSettings } from '../types';
-import { PROBLEM_TYPES_CONFIG } from '../constants/problemTypes';
+import { PROBLEM_TYPES_CONFIG, PROBLEM_GROUP_LABELS, ProblemGroup } from '../constants/problemTypes';
 
 // Types included in Semester 1 Review
 const SEMESTER_1_TYPES = [
@@ -103,7 +103,7 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8">
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Thiết lập bài kiểm tra</h1>
       </div>
@@ -180,21 +180,46 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
               isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
             }`}
           >
-            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t">
-              {grade3Types.map((type) => (
-                <label key={type.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={enabledTypes.includes(type.id)}
-                    onChange={() => handleTypeToggle(type.id)}
-                    className="mr-3 h-4 w-4 text-blue-600"
-                  />
-                  <div>
-                    <div className="font-medium text-gray-800">{type.label}</div>
-                    <div className="text-sm text-gray-500">{type.description}</div>
+            <div className="p-4 border-t">
+              {/* Render grouped sections */}
+              {(['basic', 'advanced', 'word_problem', 'other', 'geometry'] as ProblemGroup[]).map((groupKey) => {
+                const typesInGroup = grade3Types.filter(t => t.group === groupKey);
+                if (typesInGroup.length === 0) return null;
+
+                const selectedInGroup = typesInGroup.filter(t => enabledTypes.includes(t.id)).length;
+                const groupInfo = PROBLEM_GROUP_LABELS[groupKey];
+
+                return (
+                  <div key={groupKey} className="mb-4 last:mb-0">
+                    {/* Group Header */}
+                    <div className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded-lg mb-2">
+                      <span className="font-medium text-gray-700">
+                        {groupInfo.icon} {groupInfo.label}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {selectedInGroup}/{typesInGroup.length}
+                      </span>
+                    </div>
+                    {/* Types in this group */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {typesInGroup.map((type) => (
+                        <label key={type.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={enabledTypes.includes(type.id)}
+                            onChange={() => handleTypeToggle(type.id)}
+                            className="mr-3 h-4 w-4 text-blue-600"
+                          />
+                          <div>
+                            <div className="font-medium text-gray-800">{type.label}</div>
+                            <div className="text-sm text-gray-500">{type.description}</div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                </label>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

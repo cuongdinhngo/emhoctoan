@@ -222,31 +222,29 @@ export function generateReviewWrittenCalculation(difficulty: Difficulty = 'mediu
 // Do dai duong gap khuc - Broken line length
 export function generateReviewBrokenLine(difficulty: Difficulty = 'medium'): MathProblem {
   const labels = ['A', 'B', 'C', 'D', 'E'];
+  const units = ['cm', 'mm', 'm'];
   let numSegments: number;
   let segments: number[];
-  let unit: string;
 
   switch (difficulty) {
     case 'easy':
       numSegments = 2;
       segments = Array.from({ length: numSegments }, () => getRandomInt(10, 30));
-      unit = 'cm';
       break;
     case 'medium':
       numSegments = 3;
       segments = Array.from({ length: numSegments }, () => getRandomInt(15, 50));
-      unit = 'mm';
       break;
     case 'hard':
       numSegments = 4;
       segments = Array.from({ length: numSegments }, () => getRandomInt(20, 60));
-      unit = 'cm';
       break;
     default:
       numSegments = 3;
       segments = Array.from({ length: numSegments }, () => getRandomInt(15, 50));
-      unit = 'mm';
   }
+
+  const unit = units[getRandomInt(0, units.length - 1)];
 
   const segmentDescriptions = segments.map((length, index) =>
     `${labels[index]}${labels[index + 1]} = ${length}${unit}`
