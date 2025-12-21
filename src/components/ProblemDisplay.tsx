@@ -2,6 +2,7 @@ import React from 'react';
 import { MathProblem } from '../types';
 import { PROBLEM_TYPE_LABELS } from '../constants/problemTypes';
 import { AnalogClock } from './AnalogClock';
+import { FractionOptions } from './FractionGrid';
 
 interface ProblemDisplayProps {
   problem: MathProblem;
@@ -27,7 +28,15 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   // Parse clock data from question if present
   const clockMatch = problem.question.match(/\[CLOCK:(\d+):(\d+)\]/);
   const clockData = clockMatch ? { hour: parseInt(clockMatch[1]), minute: parseInt(clockMatch[2]) } : null;
-  const displayQuestion = clockData ? problem.question.replace(/\[CLOCK:\d+:\d+\]\s*/, '') : problem.question;
+
+  // Parse fraction options data if present
+  const fractionMatch = problem.question.match(/\[FRACTION_OPTIONS:(\[.*?\])\]/);
+  const fractionOptions = fractionMatch ? JSON.parse(fractionMatch[1]) : null;
+
+  // Remove special tags from display question
+  let displayQuestion = problem.question;
+  if (clockData) displayQuestion = displayQuestion.replace(/\[CLOCK:\d+:\d+\]\s*/, '');
+  if (fractionOptions) displayQuestion = displayQuestion.replace(/\[FRACTION_OPTIONS:\[.*?\]\]\s*/, '');
 
   // Check if this question has long text that needs smaller font
   const isLongQuestion = displayQuestion.length > 50;
@@ -93,6 +102,17 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             <AnalogClock hour={clockData.hour} minute={clockData.minute} size={200} />
           </div>
         )}
+        {/* Fraction grid display for visual fraction questions */}
+        {fractionOptions && (
+          <div className="mb-6">
+            <FractionOptions
+              options={fractionOptions}
+              selectedLabel={problem.userTextAnswer}
+              correctLabel={problem.textAnswer}
+              showResult={problem.isAnswered}
+            />
+          </div>
+        )}
         <div className={`${questionFontSize} font-bold text-gray-800 mb-6 ${needsSmallerFont ? 'leading-relaxed' : ''}`}>
           {displayQuestion}
         </div>
@@ -106,7 +126,7 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             <div className="flex items-center justify-center space-x-4">
               <span className="text-lg font-medium text-gray-700">Đáp án của bạn:</span>
               <span className={`text-3xl md:text-4xl font-bold ${problem.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                {clockData ? problem.userTextAnswer : problem.userAnswer}
+                {problem.userTextAnswer || problem.userAnswer}
               </span>
             </div>
 
@@ -115,7 +135,7 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
               <div className="flex items-center justify-center space-x-4 pt-2 border-t border-gray-300">
                 <span className="text-lg font-medium text-gray-700">Đáp án đúng:</span>
                 <span className="text-3xl md:text-4xl font-bold text-blue-600">
-                  {clockData ? problem.textAnswer : problem.answer}
+                  {problem.textAnswer || problem.answer}
                 </span>
               </div>
             )}

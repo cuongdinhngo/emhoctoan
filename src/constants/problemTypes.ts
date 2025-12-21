@@ -29,7 +29,10 @@ export const PROBLEM_TYPE_LABELS: Record<ProblemType, string> = {
   'review_broken_line': 'Đường gấp khúc',
   'review_chain_calculation': 'Điền số vào ô trống',
   'review_fill_blank': 'Tìm số còn thiếu',
-  'review_semester_1': 'Ôn tập: Học kỳ 1'
+  'review_semester_1': 'Ôn tập: Học kỳ 1',
+  'visual_fraction': 'Nhận biết phân số',
+  'true_false_multiply_divide': 'Đúng/Sai: Gấp/Giảm',
+  'unit_calculation': 'Tính có đơn vị'
 };
 
 /**
@@ -226,6 +229,27 @@ export const PROBLEM_TYPES_CONFIG: Array<{
     id: 'review_fill_blank',
     label: 'Tìm số còn thiếu',
     description: 'Tìm ẩn số trong phép tính: ? × 6 = 48',
+    group: 'other'
+  },
+  {
+    type: 'visual_fraction',
+    id: 'visual_fraction',
+    label: 'Nhận biết phân số',
+    description: 'Hình nào khoanh 1/n số chấm tròn?',
+    group: 'other'
+  },
+  {
+    type: 'true_false_multiply_divide',
+    id: 'true_false_multiply_divide',
+    label: 'Đúng/Sai: Gấp/Giảm',
+    description: 'Đúng ghi Đ, sai ghi S cho phép gấp/giảm',
+    group: 'other'
+  },
+  {
+    type: 'unit_calculation',
+    id: 'unit_calculation',
+    label: 'Tính có đơn vị',
+    description: 'Phép tính với đơn vị: g, kg, m, cm...',
     group: 'other'
   },
   // Review Mode (1 collection - not a problem type)

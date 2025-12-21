@@ -12,7 +12,7 @@ A Vietnamese math learning web application designed for Grade 3 students to prac
 
 ## Core Features Implemented
 
-### Math Topics Covered (26 Topics)
+### Math Topics Covered (28 Problem Types + 1 Review Mode)
 
 #### Basic Arithmetic (6 topics)
 - **Bảng nhân từ 1 đến 9**: Multiplication tables (1×1 to 9×9)
@@ -41,14 +41,19 @@ A Vietnamese math learning web application designed for Grade 3 students to prac
 - **Hình chữ nhật, chu vi, diện tích**: Rectangle: perimeter and area
 - **Hình vuông, chu vi, diện tích**: Square: perimeter and area
 
-#### Review Topics (7 topics)
+#### Other Topics (9 problem types)
 - **Xem đồng hồ**: Clock reading with analog clock display
 - **Tìm 1/n của số**: Find fraction of a number (1/2, 1/3, 1/4, 1/5)
 - **Đặt tính rồi tính**: Written calculation (multi-digit operations)
-- **Độ dài đường gấp khúc**: Broken line length calculation
+- **Đường gấp khúc**: Broken line length calculation (cm, mm, m)
 - **Điền số vào ô trống**: Chain calculation (multiply/divide sequences)
 - **Tìm số còn thiếu**: Find missing number in equations (? × 6 = 48)
-- **Ôn tập Học kỳ 1**: Semester 1 comprehensive review (14 mixed types)
+- **Nhận biết phân số**: Visual fraction identification with dot grids
+- **Đúng/Sai: Gấp/Giảm**: True/False questions for multiply/divide statements
+- **Tính có đơn vị**: Calculations with units (g, kg, m, cm, dm, l)
+
+#### Review Mode (1 collection)
+- **Ôn tập Học kỳ 1**: Semester 1 comprehensive review (combines 18 problem types)
 
 ### Key Functionality
 - ✅ Random problem generation based on selected types
@@ -60,14 +65,18 @@ A Vietnamese math learning web application designed for Grade 3 students to prac
 - ✅ Settings panel for customizing problem types
 - ✅ Progress statistics and session management
 - ✅ Analog clock component for visual time reading
-- ✅ Semester 1 review with guaranteed coverage of all 14 types
+- ✅ Semester 1 review with guaranteed coverage of all 18 types
 - ✅ Manual quiz submission (explicit "Nộp bài" button)
+- ✅ Grouped problem type selection with sub-section headers
+- ✅ Per-type statistics on test results with progress bars
+- ✅ Dynamic question quantity filtering (auto-adjusts based on review mode)
 
 ## Project Structure
 ```
 src/
 ├── components/
 │   ├── AnalogClock.tsx        # Analog clock display for time reading questions
+│   ├── FractionGrid.tsx       # SVG dot grid for visual fraction questions
 │   ├── ProblemDisplay.tsx     # Shows current math problem with type badges
 │   ├── AnswerInput.tsx        # Input field for numeric answers
 │   ├── MultipleChoiceInput.tsx # Multiple choice question input
@@ -93,7 +102,8 @@ src/
 │           ├── advanced.ts    # 2-digit, 3-digit operations
 │           ├── wordProblems.ts# All word problem types
 │           ├── geometry.ts    # Geometry problems
-│           └── review.ts      # Review/mixed problems + clock
+│           ├── review.ts      # Review/mixed problems + clock
+│           └── visual.ts      # Visual fraction, true/false, unit calc
 ├── types/
 │   └── index.ts               # TypeScript type definitions
 ├── App.tsx                    # Main app component with state management
@@ -118,6 +128,7 @@ The problem generator was refactored from a single 1,625-line file into a modula
 | `generators/wordProblems.ts` | ~190 | All 4 word problem types |
 | `generators/geometry.ts` | ~120 | Midpoint, circle, rectangle, square |
 | `generators/review.ts` | ~360 | Clock reading, fractions, chain calc, fill blank |
+| `generators/visual.ts` | ~200 | Visual fraction, true/false, unit calculation |
 
 ### Public API
 ```typescript
@@ -134,7 +145,7 @@ ProblemGenerator.generateUniqueProblems(
 ## Development Status
 - ✅ Project setup with React + Vite + TypeScript
 - ✅ Tailwind CSS configuration
-- ✅ Modular problem generator for all 26 math types
+- ✅ Modular problem generator for all 28 problem types
 - ✅ UI components (12 components)
 - ✅ Constants management system for centralized problem type definitions
 - ✅ LocalStorage helpers for progress tracking
@@ -147,20 +158,35 @@ ProblemGenerator.generateUniqueProblems(
 - ✅ Enhanced UI with smart font sizing for word problems and geometry
 - ✅ Improved answer display with separate answer blocks
 - ✅ Analog clock component with visual display
-- ✅ Semester 1 review mode with all 14 types guaranteed
+- ✅ Semester 1 review mode with all 18 types guaranteed
 - ✅ Manual quiz submission flow (no auto-submit on last question)
 - ✅ Original type badge display for review questions
 
 ## Version History
 
-### Version 3.0 (Current)
+### Version 3.2 (Current)
+- ✅ **Visual Fraction Questions**: New problem type with SVG dot grid display for fraction identification
+- ✅ **True/False Questions**: Đúng/Sai format for multiply/divide statements
+- ✅ **Unit Calculations**: Arithmetic with units (g, kg, m, cm, dm, l, ml)
+- ✅ **FractionGrid Component**: New SVG component for visual fraction display
+- ✅ **Semester 1 Review Updated**: Now includes 18 problem types (added visual fraction, true/false, unit calc, geometry_circle)
+- ✅ **Dynamic Question Quantity**: Auto-filters available quantities based on selected review mode (minimum = number of types)
+- ✅ **Total Topics**: 28 problem types + 1 review mode
+
+### Version 3.1
+- ✅ **Grouped Problem Type Selection**: Sub-section headers in setup panel (Basic, Advanced, Word Problems, Other, Geometry)
+- ✅ **Per-Type Statistics**: Test results show breakdown by question type with color-coded progress bars
+- ✅ **2-Column Statistics Layout**: Responsive grid for better readability
+- ✅ **Cleaner Labels**: Removed "Ôn tập:" prefix from miscellaneous problem types
+
+### Version 3.0
 - ✅ **Refactored Problem Generator**: Split 1,625-line monolith into modular folder structure
 - ✅ **8 New Problem Types**: Clock reading, fractions, written calc, broken line, chain calc, fill blank, word problem division remainder, semester 1 review
 - ✅ **Analog Clock Component**: Visual clock display for time reading questions
-- ✅ **Semester 1 Review Mode**: Comprehensive review with 14 problem types, minimum 14 questions
+- ✅ **Semester 1 Review Mode**: Comprehensive review with 18 problem types, minimum 18 questions
 - ✅ **Manual Quiz Submission**: "Nộp bài" button instead of auto-submit on last question
 - ✅ **Type Badge Enhancement**: Shows original problem type alongside review badge
-- ✅ **Total Topics**: 26 math topics covering full Grade 3 curriculum
+- ✅ **Total Topics**: 28 problem types + 1 review mode covering full Grade 3 curriculum
 
 ### Version 2.0
 - ✅ **Student Name Input**: Personalized experience with student name
@@ -192,12 +218,13 @@ ProblemGenerator.generateUniqueProblems(
 ### Setup Phase
 1. **Enter Student Name**: Input the student's name for personalized experience
 2. **Select Question Quantity**: Choose number of questions (10-50, default 25)
-3. **Choose Math Topics**: Select from 26 available math topics including:
-   - Basic arithmetic (addition, subtraction, multiplication, division)
-   - Advanced arithmetic (multi-digit operations)
+3. **Choose Math Topics**: Select from 28 problem types + 1 review mode:
+   - Basic arithmetic (6 types)
+   - Advanced arithmetic (5 types)
    - Word problems (4 types)
+   - Other topics (9 types)
    - Geometry (4 types)
-   - Review topics (7 types including Semester 1 comprehensive review)
+   - Review mode: Semester 1 comprehensive review (combines 18 types)
 4. **Set Difficulty**: Choose easy, medium, or hard difficulty level
 5. **Start Test**: Click "Bắt đầu kiểm tra" to begin
 

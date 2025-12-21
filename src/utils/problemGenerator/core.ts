@@ -9,6 +9,7 @@ import { generateTwoDigitMultiply, generateTwoDigitDivide, generateThreeDigitMul
 import { generateWordProblemMoreLess, generateWordProblemMultiplyDivide, generateWordProblemUnitConversion, generateWordProblemDivisionRemainder } from './generators/wordProblems';
 import { generateGeometryMidpoint, generateGeometryCircle, generateGeometryRectangle, generateGeometrySquare } from './generators/geometry';
 import { generateReviewClockReading, generateReviewFractionOfNumber, generateReviewWrittenCalculation, generateReviewBrokenLine, generateReviewChainCalculation, generateReviewFillBlank } from './generators/review';
+import { generateVisualFraction, generateTrueFalseMultiplyDivide, generateUnitCalculation } from './generators/visual';
 
 export class ProblemGenerator {
   static generateProblem(type: ProblemType, difficulty: Difficulty = 'medium'): MathProblem {
@@ -63,6 +64,12 @@ export class ProblemGenerator {
         return generateReviewFillBlank(difficulty);
       case 'word_problem_division_remainder':
         return generateWordProblemDivisionRemainder(difficulty);
+      case 'visual_fraction':
+        return generateVisualFraction(difficulty);
+      case 'true_false_multiply_divide':
+        return generateTrueFalseMultiplyDivide(difficulty);
+      case 'unit_calculation':
+        return generateUnitCalculation(difficulty);
       case 'review_semester_1':
         return this.generateReviewSemester1(difficulty);
       default:
@@ -81,12 +88,16 @@ export class ProblemGenerator {
       'word_problem_more_less',
       'word_problem_multiply_divide',
       'word_problem_division_remainder',
+      'geometry_circle',
       'review_clock_reading',
       'review_fraction_of_number',
       'review_written_calculation',
       'review_broken_line',
       'review_chain_calculation',
-      'review_fill_blank'
+      'review_fill_blank',
+      'visual_fraction',
+      'true_false_multiply_divide',
+      'unit_calculation'
     ];
 
     const randomType = semester1Types[Math.floor(Math.random() * semester1Types.length)];
@@ -118,8 +129,9 @@ export class ProblemGenerator {
         'two_digit_multiply', 'two_digit_divide', 'three_digit_multiply',
         'three_digit_divide', 'division_with_remainder', 'word_problem_more_less',
         'word_problem_multiply_divide', 'word_problem_division_remainder',
-        'review_clock_reading', 'review_fraction_of_number', 'review_written_calculation',
-        'review_broken_line', 'review_chain_calculation', 'review_fill_blank'
+        'geometry_circle', 'review_clock_reading', 'review_fraction_of_number',
+        'review_written_calculation', 'review_broken_line', 'review_chain_calculation',
+        'review_fill_blank', 'visual_fraction', 'true_false_multiply_divide', 'unit_calculation'
       ];
 
       // First, generate one question for each type

@@ -12,14 +12,18 @@ const SEMESTER_1_TYPES = [
   { label: 'Toán có lời văn: Hơn kém', type: 'word_problem_more_less' },
   { label: 'Toán có lời văn: Gấp/Giảm', type: 'word_problem_multiply_divide' },
   { label: 'Toán có lời văn: Chia có dư', type: 'word_problem_division_remainder' },
+  { label: 'Hình học: Hình tròn', type: 'geometry_circle' },
   { label: 'Xem đồng hồ', type: 'review_clock_reading' },
   { label: 'Tìm 1/n của số', type: 'review_fraction_of_number' },
   { label: 'Đặt tính rồi tính', type: 'review_written_calculation' },
   { label: 'Đường gấp khúc', type: 'review_broken_line' },
   { label: 'Điền số vào ô trống', type: 'review_chain_calculation' },
-  { label: 'Tìm số còn thiếu', type: 'review_fill_blank' }
+  { label: 'Tìm số còn thiếu', type: 'review_fill_blank' },
+  { label: 'Nhận biết phân số', type: 'visual_fraction' },
+  { label: 'Đúng/Sai: Gấp/Giảm', type: 'true_false_multiply_divide' },
+  { label: 'Tính có đơn vị', type: 'unit_calculation' }
 ];
-const MIN_SEMESTER_1_QUESTIONS = SEMESTER_1_TYPES.length; // 14
+const MIN_SEMESTER_1_QUESTIONS = SEMESTER_1_TYPES.length; // 18
 
 interface StudentSetupProps {
   onStart: (settings: ProblemSettings) => void;
@@ -48,17 +52,20 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
   // Check if semester 1 review is selected
   const isSemester1Selected = enabledTypes.includes('review_semester_1');
 
+  // Standard question quantities
+  const standardQuantities = [10, 15, 20, 25, 30, 50];
+
   // Filter available quantities based on selection
   const availableQuantities = isSemester1Selected
-    ? [15, 20, 25, 30, 50]
-    : [10, 15, 20, 25, 30, 50];
+    ? standardQuantities.filter(q => q >= MIN_SEMESTER_1_QUESTIONS)
+    : standardQuantities;
 
   // Auto-adjust question quantity if semester1 is selected and current quantity is too low
   useEffect(() => {
     if (isSemester1Selected && questionQuantity < MIN_SEMESTER_1_QUESTIONS) {
-      setQuestionQuantity(15); // Minimum available for semester1
+      setQuestionQuantity(availableQuantities[0]); // Minimum available for semester1
     }
-  }, [isSemester1Selected, questionQuantity]);
+  }, [isSemester1Selected, questionQuantity, availableQuantities]);
 
   // Handle grade3 type toggle - clears any review selection
   const handleTypeToggle = (typeId: string) => {
