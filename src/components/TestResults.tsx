@@ -55,6 +55,16 @@ export const TestResults: React.FC<TestResultsProps> = ({
 
   const gradeInfo = getGradeMessage(percentage);
 
+  // Helper function to clean question text for display
+  const cleanQuestionText = (question: string): string => {
+    let cleaned = question;
+    // Remove clock tags
+    cleaned = cleaned.replace(/\[CLOCK:\d+:\d+\]\s*/, '');
+    // Remove fraction options tags
+    cleaned = cleaned.replace(/\[FRACTION_OPTIONS:\[.*?\]\]\s*/, '');
+    return cleaned;
+  };
+
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8">
       <div className="text-center mb-8">
@@ -132,7 +142,7 @@ export const TestResults: React.FC<TestResultsProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium">Câu {index + 1}</div>
-                  <div className="text-sm opacity-75">{problem.question}</div>
+                  <div className="text-sm opacity-75">{cleanQuestionText(problem.question)}</div>
                 </div>
                 <div className="text-lg">
                   {problem.isCorrect ? '✅' : '❌'}
