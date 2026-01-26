@@ -37,10 +37,10 @@ export const GRADES: GradeConfig[] = [
   },
   {
     id: 'grade5',
-    label: 'Toan Lop 5',
-    shortLabel: 'Lop 5',
+    label: 'Toán Lớp 5',
+    shortLabel: 'Lớp 5',
     route: '/lop-5',
-    description: 'So thap phan, phan tram, hinh hoc nang cao',
+    description: 'Số thập phân, phần trăm, hình học nâng cao',
     color: 'purple',
     bgColor: 'bg-purple-500',
     hoverColor: 'hover:bg-purple-600',

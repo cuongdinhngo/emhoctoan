@@ -7,24 +7,24 @@ import { Grade, getGradeConfig } from '../constants/grades';
 
 // Types included in Semester 1 Review (Grade 3)
 const SEMESTER_1_TYPES = [
-  { label: 'Nhan 2 chu so', type: 'two_digit_multiply' },
-  { label: 'Chia 2 chu so', type: 'two_digit_divide' },
-  { label: 'Nhan 3 chu so', type: 'three_digit_multiply' },
-  { label: 'Chia 3 chu so', type: 'three_digit_divide' },
-  { label: 'Chia co du', type: 'division_with_remainder' },
-  { label: 'Toan co loi van: Hon kem', type: 'word_problem_more_less' },
-  { label: 'Toan co loi van: Gap/Giam', type: 'word_problem_multiply_divide' },
-  { label: 'Toan co loi van: Chia co du', type: 'word_problem_division_remainder' },
-  { label: 'Hinh hoc: Hinh tron', type: 'geometry_circle' },
-  { label: 'Xem dong ho', type: 'review_clock_reading' },
-  { label: 'Tim 1/n cua so', type: 'review_fraction_of_number' },
-  { label: 'Dat tinh roi tinh', type: 'review_written_calculation' },
-  { label: 'Duong gap khuc', type: 'review_broken_line' },
-  { label: 'Dien so vao o trong', type: 'review_chain_calculation' },
-  { label: 'Tim so con thieu', type: 'review_fill_blank' },
-  { label: 'Nhan biet phan so', type: 'visual_fraction' },
-  { label: 'Dung/Sai: Gap/Giam', type: 'true_false_multiply_divide' },
-  { label: 'Tinh co don vi', type: 'unit_calculation' }
+  { label: 'Nhân 2 chữ số', type: 'two_digit_multiply' },
+  { label: 'Chia 2 chữ số', type: 'two_digit_divide' },
+  { label: 'Nhân 3 chữ số', type: 'three_digit_multiply' },
+  { label: 'Chia 3 chữ số', type: 'three_digit_divide' },
+  { label: 'Chia có dư', type: 'division_with_remainder' },
+  { label: 'Toán có lời văn: Hơn kém', type: 'word_problem_more_less' },
+  { label: 'Toán có lời văn: Gấp/Giảm', type: 'word_problem_multiply_divide' },
+  { label: 'Toán có lời văn: Chia có dư', type: 'word_problem_division_remainder' },
+  { label: 'Hình học: Hình tròn', type: 'geometry_circle' },
+  { label: 'Xem đồng hồ', type: 'review_clock_reading' },
+  { label: 'Tìm 1/n của số', type: 'review_fraction_of_number' },
+  { label: 'Đặt tính rồi tính', type: 'review_written_calculation' },
+  { label: 'Đường gấp khúc', type: 'review_broken_line' },
+  { label: 'Điền số vào ô trống', type: 'review_chain_calculation' },
+  { label: 'Tìm số còn thiếu', type: 'review_fill_blank' },
+  { label: 'Nhận biết phân số', type: 'visual_fraction' },
+  { label: 'Đúng/Sai: Gấp/Giảm', type: 'true_false_multiply_divide' },
+  { label: 'Tính có đơn vị', type: 'unit_calculation' }
 ];
 const MIN_SEMESTER_1_QUESTIONS = SEMESTER_1_TYPES.length; // 18
 
@@ -46,7 +46,7 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
   const [showSemester1Modal, setShowSemester1Modal] = useState(false);
 
   const gradeConfig = getGradeConfig(grade);
-  const gradeLabel = gradeConfig?.label || 'Toan Lop 3';
+  const gradeLabel = gradeConfig?.label || 'Toán Lớp 3';
 
   // Filter problem types by grade
   const grade3Types = PROBLEM_TYPES_CONFIG.filter(t => !t.category || t.category === 'grade3');
@@ -105,12 +105,12 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
 
   const handleStart = () => {
     if (!studentName.trim()) {
-      alert('Vui long nhap ten hoc sinh!');
+      alert('Vui lòng nhập tên học sinh!');
       return;
     }
 
     if (enabledTypes.length === 0) {
-      alert('Vui long chon it nhat mot loai bai tap!');
+      alert('Vui lòng chọn ít nhất một loại bài tập!');
       return;
     }
 
@@ -143,10 +143,10 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
-            <span className="font-medium text-gray-800">Toan lop 3</span>
+            <span className="font-medium text-gray-800">Toán lớp 3</span>
           </div>
           <span className="text-sm font-semibold text-blue-600">
-            {selectedGrade3Count} / {grade3Types.length} da chon
+            {selectedGrade3Count} / {grade3Types.length} đã chọn
           </span>
         </button>
 
@@ -217,10 +217,10 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
-            <span className="font-medium text-purple-800">On tap</span>
+            <span className="font-medium text-purple-800">Ôn tập</span>
           </div>
           <span className="text-sm font-semibold text-purple-600">
-            {selectedReviewCount} / {reviewTypes.length} da chon
+            {selectedReviewCount} / {reviewTypes.length} đã chọn
           </span>
         </button>
 
@@ -270,10 +270,10 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-          <span className="font-medium text-green-800">Toan lop 4</span>
+          <span className="font-medium text-green-800">Toán lớp 4</span>
         </div>
         <span className="text-sm font-semibold text-green-600">
-          {selectedGrade4Count} / {grade4Types.length} da chon
+          {selectedGrade4Count} / {grade4Types.length} đã chọn
         </span>
       </button>
 
@@ -346,10 +346,10 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-          <span className="font-medium text-orange-800">Toan lop 5</span>
+          <span className="font-medium text-orange-800">Toán lớp 5</span>
         </div>
         <span className="text-sm font-semibold text-orange-600">
-          {selectedGrade5Count} / {grade5Types.length} da chon
+          {selectedGrade5Count} / {grade5Types.length} đã chọn
         </span>
       </button>
 
@@ -407,7 +407,7 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Thiet lap bai kiem tra</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Thiết lập bài kiểm tra</h1>
         <p className="text-gray-600">{gradeLabel}</p>
       </div>
 
@@ -415,13 +415,13 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
         {/* Student Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Ten hoc sinh *
+            Tên học sinh *
           </label>
           <input
             type="text"
             value={studentName}
             onChange={(e) => setStudentName(e.target.value)}
-            placeholder="Nhap ten cua ban..."
+            placeholder="Nhập tên của bạn..."
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -429,10 +429,10 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
         {/* Question Quantity */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            So cau hoi
+            Số câu hỏi
             {isSemester1Selected && (
               <span className="text-purple-600 text-xs ml-2">
-                (Toi thieu {MIN_SEMESTER_1_QUESTIONS} cau)
+                (Tối thiểu {MIN_SEMESTER_1_QUESTIONS} câu)
               </span>
             )}
           </label>
@@ -447,7 +447,7 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
                     : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300'
                 }`}
               >
-                {quantity} cau
+                {quantity} câu
               </button>
             ))}
           </div>
@@ -461,13 +461,13 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
         {/* Difficulty */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-3">
-            Do kho
+            Độ khó
           </label>
           <div className="space-y-2">
             {[
-              { value: 'easy', label: 'De', description: 'So nho, phep tinh don gian' },
-              { value: 'medium', label: 'Trung binh', description: 'So vua phai' },
-              { value: 'hard', label: 'Kho', description: 'So lon, phep tinh phuc tap' }
+              { value: 'easy', label: 'Dễ', description: 'Số nhỏ, phép tính đơn giản' },
+              { value: 'medium', label: 'Trung bình', description: 'Số vừa phải' },
+              { value: 'hard', label: 'Khó', description: 'Số lớn, phép tính phức tạp' }
             ].map(({ value, label, description }) => (
               <label key={value} className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
                 <input
@@ -492,7 +492,7 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
           onClick={handleStart}
           className="w-full font-bold py-4 px-6 rounded-xl text-lg transition-colors duration-200 bg-blue-500 hover:bg-blue-600 text-white"
         >
-          Bat dau kiem tra
+          Bắt đầu kiểm tra
         </button>
       </div>
 
@@ -501,7 +501,7 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-purple-800 mb-4">
-              On tap Hoc ky 1 bao gom:
+              Ôn tập Học kỳ 1 bao gồm:
             </h2>
             <ul className="space-y-2 mb-6">
               {SEMESTER_1_TYPES.map((item, index) => (
@@ -514,13 +514,13 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
               ))}
             </ul>
             <p className="text-sm text-gray-500 mb-4">
-              Toi thieu {MIN_SEMESTER_1_QUESTIONS} cau hoi de dam bao moi dang co it nhat 1 cau.
+              Tối thiểu {MIN_SEMESTER_1_QUESTIONS} câu hỏi để đảm bảo mỗi dạng có ít nhất 1 câu.
             </p>
             <button
               onClick={() => setShowSemester1Modal(false)}
               className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-xl"
             >
-              Da hieu
+              Đã hiểu
             </button>
           </div>
         </div>

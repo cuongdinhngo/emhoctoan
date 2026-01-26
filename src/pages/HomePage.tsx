@@ -30,7 +30,7 @@ const GradeCard: React.FC<{ grade: GradeConfig }> = ({ grade }) => {
     return (
       <div className={`relative p-6 rounded-2xl border-2 ${colors.bg} ${colors.border} opacity-60 cursor-not-allowed`}>
         <div className="absolute top-3 right-3 bg-gray-500 text-white text-xs px-2 py-1 rounded-full">
-          Sap ra mat
+          Sắp ra mắt
         </div>
         <div className="text-center">
           <div className="text-5xl mb-4">
@@ -67,7 +67,7 @@ export const HomePage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-center space-x-3">
             <div className="text-3xl">&#129518;</div>
-            <h1 className="text-2xl font-bold text-gray-800">Em Hoc Toan</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Em Học Toán</h1>
           </div>
         </div>
       </header>
@@ -75,8 +75,8 @@ export const HomePage: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Chon lop cua con</h2>
-          <p className="text-gray-600">Luyen tap toan theo chuong trinh hoc</p>
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Chọn lớp của con</h2>
+          <p className="text-gray-600">Luyện tập toán theo chương trình học</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -86,7 +86,7 @@ export const HomePage: React.FC = () => {
         </div>
 
         <div className="mt-12 text-center text-gray-500 text-sm">
-          <p>Ung dung giup cac em hoc sinh luyen tap toan theo chuong trinh SGK</p>
+          <p>Ứng dụng giúp các em học sinh luyện tập toán theo chương trình SGK</p>
         </div>
       </main>
     </div>
