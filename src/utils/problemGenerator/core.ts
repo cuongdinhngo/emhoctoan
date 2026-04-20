@@ -8,7 +8,23 @@ import { generateMultiplicationTable, generateDivisionTable } from './generators
 import { generateTwoDigitMultiply, generateTwoDigitDivide, generateThreeDigitMultiply, generateThreeDigitDivide, generateDivisionWithRemainder } from './generators/advanced';
 import { generateWordProblemMoreLess, generateWordProblemMultiplyDivide, generateWordProblemUnitConversion, generateWordProblemDivisionRemainder } from './generators/wordProblems';
 import { generateGeometryMidpoint, generateGeometryCircle, generateGeometryRectangle, generateGeometrySquare } from './generators/geometry';
-import { generateReviewClockReading, generateReviewFractionOfNumber, generateReviewWrittenCalculation, generateReviewBrokenLine, generateReviewChainCalculation, generateReviewFillBlank } from './generators/review';
+import {
+  generateReviewClockReading,
+  generateReviewFractionOfNumber,
+  generateReviewWrittenCalculation,
+  generateReviewBrokenLine,
+  generateReviewChainCalculation,
+  generateReviewFillBlank,
+  generateReviewRounding,
+  generateReviewDateCalculation,
+  generateReviewMoney,
+  generateReviewDigitValue,
+  generateReviewMonthDays,
+  generateReviewRomanNumerals,
+  generateReviewCubeProperties,
+  generateReviewExpression,
+  generateReviewUnitConversion
+} from './generators/review';
 import { generateVisualFraction, generateTrueFalseMultiplyDivide, generateUnitCalculation } from './generators/visual';
 
 // Import Grade 4 generators
@@ -83,6 +99,143 @@ import {
 } from './generators/grade5';
 
 export class ProblemGenerator {
+  private static readonly SEMESTER2_TYPES: ProblemType[] = [
+    'addition',
+    'subtraction',
+    'two_digit_multiply',
+    'two_digit_divide',
+    'three_digit_multiply',
+    'three_digit_divide',
+    'division_with_remainder',
+    'review_written_calculation',
+    'review_expression',
+    'review_rounding',
+    'review_unit_conversion',
+    'review_date_calculation',
+    'review_money',
+    'review_digit_value',
+    'review_month_days',
+    'review_roman_numerals',
+    'review_cube_properties',
+    'geometry_midpoint',
+    'geometry_rectangle',
+    'geometry_square',
+    'geometry_circle',
+    'word_problem_more_less',
+    'word_problem_multiply_divide',
+    'word_problem_unit_conversion',
+    'word_problem_division_remainder'
+  ];
+
+  private static readonly SEMESTER2_WEIGHTED_TYPES: ProblemType[] = [
+    // Keep some basic arithmetic, but not too frequent
+    'addition',
+    'subtraction',
+
+    // Core HK2 arithmetic focus
+    'two_digit_multiply', 'two_digit_multiply',
+    'two_digit_divide', 'two_digit_divide',
+    'three_digit_multiply', 'three_digit_multiply',
+    'three_digit_divide', 'three_digit_divide',
+    'division_with_remainder', 'division_with_remainder',
+    'review_written_calculation', 'review_written_calculation',
+    'review_expression', 'review_expression',
+
+    // Practical forms from worksheets
+    'review_rounding',
+    'review_unit_conversion', 'review_unit_conversion',
+    'review_date_calculation',
+    'review_money', 'review_money',
+    'review_digit_value',
+    'review_month_days',
+    'review_roman_numerals',
+
+    // Geometry
+    'review_cube_properties',
+    'geometry_midpoint',
+    'geometry_rectangle', 'geometry_rectangle',
+    'geometry_square', 'geometry_square',
+    'geometry_circle', 'geometry_circle',
+
+    // Word problems
+    'word_problem_more_less', 'word_problem_more_less',
+    'word_problem_multiply_divide', 'word_problem_multiply_divide',
+    'word_problem_unit_conversion', 'word_problem_unit_conversion',
+    'word_problem_division_remainder', 'word_problem_division_remainder'
+  ];
+
+  private static isTooEasyForSemester2(problem: MathProblem): boolean {
+    const question = problem.question;
+
+    if (problem.type === 'addition') {
+      const match = question.match(/(\d+)\s*\+\s*(\d+)/);
+      if (!match) return false;
+      const a = parseInt(match[1], 10);
+      const b = parseInt(match[2], 10);
+      return a < 500 || b < 500;
+    }
+
+    if (problem.type === 'subtraction') {
+      const match = question.match(/(\d+)\s*-\s*(\d+)/);
+      if (!match) return false;
+      const a = parseInt(match[1], 10);
+      const b = parseInt(match[2], 10);
+      return a < 1000 || b < 100;
+    }
+
+    if (problem.type === 'multiplication' || problem.type === 'two_digit_multiply' || problem.type === 'three_digit_multiply') {
+      const match = question.match(/(\d+)\s*[×x]\s*(\d+)/);
+      if (!match) return false;
+      const a = parseInt(match[1], 10);
+      const b = parseInt(match[2], 10);
+      return a <= 12 || b <= 5;
+    }
+
+    if (problem.type === 'division' || problem.type === 'two_digit_divide' || problem.type === 'three_digit_divide') {
+      const match = question.match(/(\d+)\s*:\s*(\d+)/);
+      if (!match) return false;
+      const dividend = parseInt(match[1], 10);
+      const divisor = parseInt(match[2], 10);
+      const quotient = problem.answer;
+      return dividend <= 120 || divisor <= 5 || quotient <= 10;
+    }
+
+    if (problem.type === 'division_with_remainder') {
+      const numbers = question.match(/\d+/g)?.map(n => parseInt(n, 10)) || [];
+      if (numbers.length < 2) return false;
+      const maxNumber = Math.max(...numbers);
+      return maxNumber < 100;
+    }
+
+    if (problem.type === 'word_problem_multiply_divide') {
+      const numbers = question.match(/\d+/g)?.map(n => parseInt(n, 10)) || [];
+      if (numbers.length === 0) return false;
+      const maxNumber = Math.max(...numbers);
+      const minNumber = Math.min(...numbers);
+      return minNumber < 10 || maxNumber < 100;
+    }
+
+    if (problem.type === 'review_written_calculation') {
+      const numbers = question.match(/\d+/g)?.map(n => parseInt(n, 10)) || [];
+      if (numbers.length < 2) return false;
+      return Math.max(...numbers) < 1000;
+    }
+
+    return false;
+  }
+
+  private static generateSemester2ProblemOfType(type: ProblemType, difficulty: Difficulty): MathProblem {
+    const maxAttempts = 25;
+    for (let i = 0; i < maxAttempts; i++) {
+      const problem = this.generateProblem(type, difficulty);
+      if (!this.isTooEasyForSemester2(problem)) {
+        return problem;
+      }
+    }
+
+    return this.generateProblem(type, difficulty);
+  }
+
   static generateProblem(type: ProblemType, difficulty: Difficulty = 'medium'): MathProblem {
     switch (type) {
       // Grade 3 - Basic Arithmetic
@@ -144,8 +297,28 @@ export class ProblemGenerator {
         return generateReviewChainCalculation(difficulty);
       case 'review_fill_blank':
         return generateReviewFillBlank(difficulty);
+      case 'review_rounding':
+        return generateReviewRounding(difficulty);
+      case 'review_date_calculation':
+        return generateReviewDateCalculation(difficulty);
+      case 'review_money':
+        return generateReviewMoney(difficulty);
+      case 'review_digit_value':
+        return generateReviewDigitValue(difficulty);
+      case 'review_month_days':
+        return generateReviewMonthDays(difficulty);
+      case 'review_roman_numerals':
+        return generateReviewRomanNumerals(difficulty);
+      case 'review_cube_properties':
+        return generateReviewCubeProperties();
+      case 'review_expression':
+        return generateReviewExpression(difficulty);
+      case 'review_unit_conversion':
+        return generateReviewUnitConversion(difficulty);
       case 'review_semester_1':
         return this.generateReviewSemester1(difficulty);
+      case 'review_semester_2':
+        return this.generateReviewSemester2(difficulty);
 
       // Grade 3 - Visual
       case 'visual_fraction':
@@ -318,6 +491,18 @@ export class ProblemGenerator {
     };
   }
 
+  private static generateReviewSemester2(_difficulty: Difficulty): MathProblem {
+    // HK2 always runs in hard mode to match worksheet level
+    const effectiveDifficulty: Difficulty = 'hard';
+    const randomType = this.SEMESTER2_WEIGHTED_TYPES[Math.floor(Math.random() * this.SEMESTER2_WEIGHTED_TYPES.length)];
+    const problem = this.generateSemester2ProblemOfType(randomType, effectiveDifficulty);
+
+    return {
+      ...problem,
+      type: 'review_semester_2'
+    };
+  }
+
   static generateRandomProblem(enabledTypes: ProblemType[], difficulty: Difficulty = 'medium'): MathProblem {
     const randomType = enabledTypes[Math.floor(Math.random() * enabledTypes.length)];
     return this.generateProblem(randomType, difficulty);
@@ -374,6 +559,37 @@ export class ProblemGenerator {
       }
 
       // Shuffle to mix the order
+      return problems.sort(() => Math.random() - 0.5);
+    }
+
+    if (enabledTypes.length === 1 && enabledTypes[0] === 'review_semester_2') {
+      const effectiveDifficulty: Difficulty = 'hard';
+
+      for (const type of this.SEMESTER2_TYPES) {
+        const problem = this.generateSemester2ProblemOfType(type, effectiveDifficulty);
+        const originalType = problem.type;
+        problem.originalType = originalType;
+        problem.type = 'review_semester_2';
+        const normalizedKey = createNormalizedQuestionKey(problem);
+        if (!usedQuestions.has(normalizedKey)) {
+          usedQuestions.add(normalizedKey);
+          problems.push(problem);
+        }
+      }
+
+      while (problems.length < quantity) {
+        const randomType = this.SEMESTER2_WEIGHTED_TYPES[Math.floor(Math.random() * this.SEMESTER2_WEIGHTED_TYPES.length)];
+        const problem = this.generateSemester2ProblemOfType(randomType, effectiveDifficulty);
+        const originalType = problem.type;
+        problem.originalType = originalType;
+        problem.type = 'review_semester_2';
+        const normalizedKey = createNormalizedQuestionKey(problem);
+        if (!usedQuestions.has(normalizedKey)) {
+          usedQuestions.add(normalizedKey);
+          problems.push(problem);
+        }
+      }
+
       return problems.sort(() => Math.random() - 0.5);
     }
 

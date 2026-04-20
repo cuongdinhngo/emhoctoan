@@ -31,7 +31,17 @@ export const GRADE3_PROBLEM_TYPE_LABELS: Record<Grade3ProblemType, string> = {
   'review_broken_line': 'Đường gấp khúc',
   'review_chain_calculation': 'Điền số vào ô trống',
   'review_fill_blank': 'Tìm số còn thiếu',
+  'review_rounding': 'Làm tròn số',
+  'review_date_calculation': 'Tính ngày tháng',
+  'review_money': 'Toán tiền Việt Nam',
+  'review_digit_value': 'Giá trị chữ số',
+  'review_month_days': 'Tháng có 30/31 ngày',
+  'review_roman_numerals': 'Số La Mã',
+  'review_cube_properties': 'Khối lập phương',
+  'review_expression': 'Biểu thức có ngoặc',
+  'review_unit_conversion': 'Đổi đơn vị',
   'review_semester_1': 'Ôn tập: Học kỳ 1',
+  'review_semester_2': 'Ôn tập: Học kỳ 2',
   'visual_fraction': 'Nhận biết phân số',
   'true_false_multiply_divide': 'Đúng/Sai: Gấp/Giảm',
   'unit_calculation': 'Tính có đơn vị'
@@ -269,6 +279,13 @@ export const PROBLEM_TYPES_CONFIG: Array<{
     id: 'review_semester_1',
     label: 'Ôn tập Học kỳ 1',
     description: 'Tổng hợp các dạng bài tập',
+    category: 'review'
+  },
+  {
+    type: 'review_semester_2',
+    id: 'review_semester_2',
+    label: 'Ôn tập Học kỳ 2',
+    description: 'Tổng hợp các dạng bài tập HKII',
     category: 'review'
   }
 ];

@@ -2,7 +2,7 @@
 export type { Grade } from '../constants/grades';
 
 // Grade 3 problem types
-export type Grade3ProblemType = 'addition' | 'subtraction' | 'multiplication' | 'division' | 'multiplication_table' | 'division_table' | 'two_digit_multiply' | 'division_with_remainder' | 'two_digit_divide' | 'three_digit_multiply' | 'three_digit_divide' | 'word_problem_more_less' | 'word_problem_multiply_divide' | 'word_problem_unit_conversion' | 'word_problem_division_remainder' | 'geometry_midpoint' | 'geometry_circle' | 'geometry_rectangle' | 'geometry_square' | 'review_clock_reading' | 'review_fraction_of_number' | 'review_written_calculation' | 'review_broken_line' | 'review_chain_calculation' | 'review_fill_blank' | 'review_semester_1' | 'visual_fraction' | 'true_false_multiply_divide' | 'unit_calculation';
+export type Grade3ProblemType = 'addition' | 'subtraction' | 'multiplication' | 'division' | 'multiplication_table' | 'division_table' | 'two_digit_multiply' | 'division_with_remainder' | 'two_digit_divide' | 'three_digit_multiply' | 'three_digit_divide' | 'word_problem_more_less' | 'word_problem_multiply_divide' | 'word_problem_unit_conversion' | 'word_problem_division_remainder' | 'geometry_midpoint' | 'geometry_circle' | 'geometry_rectangle' | 'geometry_square' | 'review_clock_reading' | 'review_fraction_of_number' | 'review_written_calculation' | 'review_broken_line' | 'review_chain_calculation' | 'review_fill_blank' | 'review_rounding' | 'review_date_calculation' | 'review_money' | 'review_digit_value' | 'review_month_days' | 'review_roman_numerals' | 'review_cube_properties' | 'review_expression' | 'review_unit_conversion' | 'review_semester_1' | 'review_semester_2' | 'visual_fraction' | 'true_false_multiply_divide' | 'unit_calculation';
 
 // Grade 4 problem types
 export type Grade4ProblemType =
@@ -90,7 +90,7 @@ export interface MathProblem {
   isAnswered: boolean;
   textAnswer?: string;      // For string-based answers (e.g., "9 giờ 30 phút")
   userTextAnswer?: string;  // User's text input
-  originalType?: ProblemType; // For review_semester_1 to show actual question type
+  originalType?: ProblemType; // For review mode to show actual question type
 }
 
 export interface ProblemSettings {

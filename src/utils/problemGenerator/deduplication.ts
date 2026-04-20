@@ -21,7 +21,17 @@ export function createNormalizedQuestionKey(problem: MathProblem): string {
     type === 'review_broken_line' ||
     type === 'review_chain_calculation' ||
     type === 'review_fill_blank' ||
-    type === 'review_semester_1'
+    type === 'review_rounding' ||
+    type === 'review_date_calculation' ||
+    type === 'review_money' ||
+    type === 'review_digit_value' ||
+    type === 'review_month_days' ||
+    type === 'review_roman_numerals' ||
+    type === 'review_cube_properties' ||
+    type === 'review_expression' ||
+    type === 'review_unit_conversion' ||
+    type === 'review_semester_1' ||
+    type === 'review_semester_2'
   ) {
     const numbers = question.match(/\d+/g)?.map(n => parseInt(n)).sort((a, b) => a - b) || [];
     return `${type}:${numbers.join(',')}`;

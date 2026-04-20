@@ -25,6 +25,8 @@ export const MultipleChoiceInput: React.FC<MultipleChoiceInputProps> = ({
   disabled = false,
   showResult = false
 }) => {
+  const formatNumberVi = (value: number) => value.toLocaleString('vi-VN');
+
   // Determine if this is a text-based MCQ
   const isTextMode = textOptions && textOptions.length > 0;
 
@@ -90,7 +92,7 @@ export const MultipleChoiceInput: React.FC<MultipleChoiceInputProps> = ({
             disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-md'
           } ${getOptionStyle(option, false)}`}
         >
-          {option}
+          {formatNumberVi(option)}
         </button>
       ))}
     </div>

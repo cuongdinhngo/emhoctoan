@@ -96,6 +96,69 @@ function generateChainTextOptions(
   return optionsArray.slice(0, 4);
 }
 
+function getDaysInMonth(month: number): number {
+  if (month === 2) return 28;
+  if ([4, 6, 9, 11].includes(month)) return 30;
+  return 31;
+}
+
+function toRomanNumeral(num: number): string {
+  const map: Array<[number, string]> = [
+    [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
+    [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+    [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']
+  ];
+  let remaining = num;
+  let result = '';
+
+  for (const [value, symbol] of map) {
+    while (remaining >= value) {
+      result += symbol;
+      remaining -= value;
+    }
+  }
+  return result;
+}
+
+function formatDateText(day: number, month: number): string {
+  return `${day}/${month}`;
+}
+
+function addDays(day: number, month: number, offset: number): { day: number; month: number } {
+  let resultDay = day;
+  let resultMonth = month;
+  let remaining = offset;
+
+  while (remaining > 0) {
+    const daysInMonth = getDaysInMonth(resultMonth);
+    if (resultDay + remaining <= daysInMonth) {
+      resultDay += remaining;
+      remaining = 0;
+    } else {
+      remaining -= (daysInMonth - resultDay + 1);
+      resultDay = 1;
+      resultMonth = resultMonth === 12 ? 1 : resultMonth + 1;
+    }
+  }
+
+  return { day: resultDay, month: resultMonth };
+}
+
+function generateDateTextOptions(correctDay: number, correctMonth: number): string[] {
+  const correct = formatDateText(correctDay, correctMonth);
+  const options = new Set<string>([correct]);
+  while (options.size < 4) {
+    const randomMonth = getRandomInt(1, 12);
+    const randomDay = getRandomInt(1, getDaysInMonth(randomMonth));
+    const randomDate = formatDateText(randomDay, randomMonth);
+    if (randomDate !== correct) {
+      options.add(randomDate);
+    }
+  }
+
+  return Array.from(options).sort(() => Math.random() - 0.5);
+}
+
 // Xem dong ho - Clock reading with multiple choice text options
 export function generateReviewClockReading(difficulty: Difficulty = 'medium'): MathProblem {
   let hour: number;
@@ -420,6 +483,351 @@ export function generateReviewFillBlank(difficulty: Difficulty = 'medium'): Math
   }
 
   return createProblem('review_fill_blank', question!, answer!);
+}
+
+// Lam tron so - Round number to nearest place value
+export function generateReviewRounding(difficulty: Difficulty = 'medium'): MathProblem {
+  let number: number;
+  let placeValue: number;
+  let placeLabel: string;
+
+  switch (difficulty) {
+    case 'easy':
+      number = getRandomInt(100, 999);
+      placeValue = 10;
+      placeLabel = 'hàng chục';
+      break;
+    case 'medium':
+      number = getRandomInt(1000, 9999);
+      placeValue = 100;
+      placeLabel = 'hàng trăm';
+      break;
+    case 'hard':
+      number = getRandomInt(10000, 99999);
+      placeValue = [1000, 10000][getRandomInt(0, 1)];
+      placeLabel = placeValue === 1000 ? 'hàng nghìn' : 'hàng chục nghìn';
+      break;
+    default:
+      number = getRandomInt(1000, 9999);
+      placeValue = 100;
+      placeLabel = 'hàng trăm';
+  }
+
+  const answer = Math.round(number / placeValue) * placeValue;
+  const question = `Làm tròn số ${number} đến ${placeLabel}.`;
+  return createProblem('review_rounding', question, answer);
+}
+
+// Tinh ngay thang - date calculation in month calendar
+export function generateReviewDateCalculation(difficulty: Difficulty = 'medium'): MathProblem {
+  let day: number;
+  let month: number;
+  let offset: number;
+
+  switch (difficulty) {
+    case 'easy':
+      month = getRandomInt(1, 12);
+      day = getRandomInt(1, Math.max(1, getDaysInMonth(month) - 3));
+      offset = getRandomInt(1, 3);
+      break;
+    case 'medium':
+      month = getRandomInt(1, 12);
+      day = getRandomInt(20, getDaysInMonth(month));
+      offset = getRandomInt(2, 6);
+      break;
+    case 'hard':
+      month = getRandomInt(1, 12);
+      day = getRandomInt(24, getDaysInMonth(month));
+      offset = getRandomInt(4, 9);
+      break;
+    default:
+      month = getRandomInt(1, 12);
+      day = getRandomInt(20, getDaysInMonth(month));
+      offset = getRandomInt(2, 6);
+  }
+
+  const result = addDays(day, month, offset);
+  const textAnswer = formatDateText(result.day, result.month);
+  const textOptions = generateDateTextOptions(result.day, result.month);
+  const question = `Hôm nay là ngày ${day}/${month}. Còn ${offset} ngày nữa sẽ là ngày nào?`;
+
+  return {
+    id: generateUniqueId(),
+    type: 'review_date_calculation',
+    question,
+    answer: result.day,
+    questionType: 'multiple_choice' as QuestionType,
+    textAnswer,
+    textOptions,
+    isAnswered: false
+  };
+}
+
+// Toan tien - purchasing and change
+export function generateReviewMoney(difficulty: Difficulty = 'medium'): MathProblem {
+  let item1: number;
+  let item2: number;
+  let paid: number;
+
+  switch (difficulty) {
+    case 'easy':
+      item1 = getRandomInt(5, 20) * 1000;
+      item2 = getRandomInt(2, 10) * 1000;
+      paid = [50000, 100000][getRandomInt(0, 1)];
+      break;
+    case 'medium':
+      item1 = getRandomInt(10, 35) * 1000;
+      item2 = getRandomInt(5, 25) * 1000;
+      paid = [50000, 100000, 200000][getRandomInt(0, 2)];
+      break;
+    case 'hard':
+      item1 = getRandomInt(20, 60) * 1000;
+      item2 = getRandomInt(10, 40) * 1000;
+      paid = [100000, 200000, 500000][getRandomInt(0, 2)];
+      break;
+    default:
+      item1 = getRandomInt(10, 35) * 1000;
+      item2 = getRandomInt(5, 25) * 1000;
+      paid = [50000, 100000, 200000][getRandomInt(0, 2)];
+  }
+
+  const total = item1 + item2;
+  if (paid < total) {
+    paid = Math.ceil(total / 50000) * 50000;
+  }
+
+  const answer = paid - total;
+  const question = `Mua 2 món hàng giá ${item1.toLocaleString('vi-VN')} đồng và ${item2.toLocaleString('vi-VN')} đồng. Đưa ${paid.toLocaleString('vi-VN')} đồng. Hỏi được thối lại bao nhiêu đồng?`;
+  return createProblem('review_money', question, answer);
+}
+
+// Gia tri chu so / so lien truoc - value of digit or predecessor/successor
+export function generateReviewDigitValue(difficulty: Difficulty = 'medium'): MathProblem {
+  const mode = Math.random() < 0.5 ? 'digit_value' : 'adjacent_number';
+
+  if (mode === 'digit_value') {
+    const min = difficulty === 'easy' ? 1000 : 10000;
+    const max = difficulty === 'hard' ? 999999 : 99999;
+    const number = getRandomInt(min, max);
+    const digits = number.toString().split('').map(Number);
+    const position = getRandomInt(0, digits.length - 1);
+    const digit = digits[position];
+    const place = digits.length - 1 - position;
+    const answer = digit * Math.pow(10, place);
+    const question = `Giá trị của chữ số ${digit} trong số ${number.toLocaleString('vi-VN')} là bao nhiêu?`;
+    return createProblem('review_digit_value', question, answer);
+  }
+
+  const number = getRandomInt(1000, difficulty === 'hard' ? 99999 : 9999);
+  const askPredecessor = Math.random() < 0.5;
+  const answer = askPredecessor ? number - 1 : number + 1;
+  const question = askPredecessor
+    ? `Số liền trước của số ${number.toLocaleString('vi-VN')} là số nào?`
+    : `Số liền sau của số ${number.toLocaleString('vi-VN')} là số nào?`;
+  return createProblem('review_digit_value', question, answer);
+}
+
+// Thang co bao nhieu ngay - identify month day count
+export function generateReviewMonthDays(difficulty: Difficulty = 'medium'): MathProblem {
+  let month: number;
+  if (difficulty === 'easy') {
+    month = [4, 6, 9, 11, 1, 3, 5, 7, 8, 10, 12][getRandomInt(0, 10)];
+  } else {
+    month = getRandomInt(1, 12);
+  }
+  const answer = getDaysInMonth(month);
+  const question = `Tháng ${month} có bao nhiêu ngày?`;
+  return createProblem('review_month_days', question, answer);
+}
+
+// So La Ma - convert between Roman and Arabic numerals
+export function generateReviewRomanNumerals(difficulty: Difficulty = 'medium'): MathProblem {
+  let maxValue: number;
+  switch (difficulty) {
+    case 'easy':
+      maxValue = 20;
+      break;
+    case 'medium':
+      maxValue = 39;
+      break;
+    case 'hard':
+      maxValue = 50;
+      break;
+    default:
+      maxValue = 39;
+  }
+
+  const value = getRandomInt(1, maxValue);
+  const roman = toRomanNumeral(value);
+  const askToRoman = Math.random() < 0.5;
+
+  if (askToRoman) {
+    const options = new Set<string>([roman]);
+    while (options.size < 4) {
+      const wrongValue = getRandomInt(1, maxValue);
+      const wrongRoman = toRomanNumeral(wrongValue);
+      if (wrongRoman !== roman) {
+        options.add(wrongRoman);
+      }
+    }
+
+    return {
+      id: generateUniqueId(),
+      type: 'review_roman_numerals',
+      question: `Viết số La Mã của số ${value} là:`,
+      answer: value,
+      questionType: 'multiple_choice' as QuestionType,
+      textAnswer: roman,
+      textOptions: Array.from(options).sort(() => Math.random() - 0.5),
+      isAnswered: false
+    };
+  }
+
+  return createProblem('review_roman_numerals', `Số ${roman} có giá trị là bao nhiêu?`, value);
+}
+
+// Khoi lap phuong - identify correct/incorrect cube property
+export function generateReviewCubeProperties(): MathProblem {
+  const askIncorrect = Math.random() < 0.5;
+  const question = askIncorrect
+    ? 'Nhận định nào sau đây không đúng về khối lập phương?'
+    : 'Nhận định nào sau đây đúng về khối lập phương?';
+
+  const correctText = askIncorrect
+    ? 'Khối lập phương có tất cả 8 mặt.'
+    : 'Khối lập phương có tất cả 12 cạnh.';
+
+  const textOptions = askIncorrect
+    ? [
+        'Khối lập phương có tất cả 8 mặt.',
+        'Khối lập phương có tất cả 8 đỉnh.',
+        'Khối lập phương có tất cả các cạnh bằng nhau.',
+        'Khối lập phương có tất cả 12 cạnh.'
+      ]
+    : [
+        'Khối lập phương có tất cả 10 cạnh.',
+        'Khối lập phương có tất cả 6 đỉnh.',
+        'Khối lập phương có tất cả 8 cạnh.',
+        'Khối lập phương có tất cả 12 cạnh.'
+      ];
+
+  return {
+    id: generateUniqueId(),
+    type: 'review_cube_properties',
+    question,
+    answer: 0,
+    questionType: 'multiple_choice' as QuestionType,
+    textAnswer: correctText,
+    textOptions: textOptions.sort(() => Math.random() - 0.5),
+    isAnswered: false
+  };
+}
+
+// Bieu thuc co ngoac - evaluate expression with operation precedence
+export function generateReviewExpression(difficulty: Difficulty = 'medium'): MathProblem {
+  const pattern = Math.random() < 0.5 ? 'sub_with_sum_bracket' : 'division_nested_bracket';
+
+  if (pattern === 'sub_with_sum_bracket') {
+    let outer: number;
+    let b: number;
+    let c: number;
+
+    switch (difficulty) {
+      case 'easy':
+        b = getRandomInt(10, 80);
+        c = getRandomInt(10, 80);
+        outer = getRandomInt(b + c + 20, b + c + 300);
+        break;
+      case 'medium':
+        b = getRandomInt(50, 300);
+        c = getRandomInt(30, 250);
+        outer = getRandomInt(b + c + 50, b + c + 1200);
+        break;
+      case 'hard':
+        b = getRandomInt(150, 900);
+        c = getRandomInt(120, 800);
+        outer = getRandomInt(b + c + 200, b + c + 4000);
+        break;
+      default:
+        b = getRandomInt(50, 300);
+        c = getRandomInt(30, 250);
+        outer = getRandomInt(b + c + 50, b + c + 1200);
+    }
+
+    const answer = outer - (b + c);
+    const question = `Tính giá trị biểu thức: ${outer} – (${b} + ${c})`;
+    return createProblem('review_expression', question, answer);
+  }
+
+  // division_nested_bracket: a : (b : c)
+  let a: number;
+  let b: number;
+  let c: number;
+
+  switch (difficulty) {
+    case 'easy':
+      c = getRandomInt(2, 5);
+      b = c * getRandomInt(2, 9);
+      a = getRandomInt(40, 120);
+      a = a - (a % (b / c)); // make exact division
+      break;
+    case 'medium':
+      c = getRandomInt(2, 9);
+      b = c * getRandomInt(3, 12);
+      a = getRandomInt(120, 500);
+      a = a - (a % (b / c));
+      break;
+    case 'hard':
+      c = getRandomInt(2, 9);
+      b = c * getRandomInt(6, 20);
+      a = getRandomInt(300, 2000);
+      a = a - (a % (b / c));
+      break;
+    default:
+      c = getRandomInt(2, 9);
+      b = c * getRandomInt(3, 12);
+      a = getRandomInt(120, 500);
+      a = a - (a % (b / c));
+  }
+
+  if (a === 0) {
+    a = b / c;
+  }
+
+  const answer = a / (b / c);
+  const question = `Tính giá trị biểu thức: ${a} : (${b} : ${c})`;
+  return createProblem('review_expression', question, answer);
+}
+
+// Doi don vi - convert measurement units
+export function generateReviewUnitConversion(difficulty: Difficulty = 'medium'): MathProblem {
+  const patterns = [
+    { from: 'm', to: 'cm', factor: 100 },
+    { from: 'km', to: 'm', factor: 1000 },
+    { from: 'giờ', to: 'phút', factor: 60 },
+    { from: 'kg', to: 'g', factor: 1000 },
+    { from: 'dm', to: 'cm', factor: 10 }
+  ] as const;
+  const pattern = patterns[getRandomInt(0, patterns.length - 1)];
+
+  let value: number;
+  switch (difficulty) {
+    case 'easy':
+      value = getRandomInt(2, 12);
+      break;
+    case 'medium':
+      value = getRandomInt(5, 30);
+      break;
+    case 'hard':
+      value = getRandomInt(15, 80);
+      break;
+    default:
+      value = getRandomInt(5, 30);
+  }
+
+  const answer = value * pattern.factor;
+  const question = `Điền số thích hợp: ${value} ${pattern.from} = ? ${pattern.to}`;
+  return createProblem('review_unit_conversion', question, answer);
 }
 
 // On tap Hoc ky 1 - Semester 1 Review (mixed questions)

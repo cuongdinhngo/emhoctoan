@@ -6,7 +6,13 @@ import { GRADE5_PROBLEM_TYPES_CONFIG, GRADE5_PROBLEM_GROUP_LABELS, Grade5Problem
 import { Grade, getGradeConfig } from '../constants/grades';
 
 // Types included in Semester 1 Review (Grade 3)
-const SEMESTER_1_TYPES = [
+type SemesterTypeItem = {
+  label: string;
+  type: string;
+  group?: 'number_ops' | 'measurement' | 'geometry' | 'word_problem';
+};
+
+const SEMESTER_1_TYPES: SemesterTypeItem[] = [
   { label: 'Nhân 2 chữ số', type: 'two_digit_multiply' },
   { label: 'Chia 2 chữ số', type: 'two_digit_divide' },
   { label: 'Nhân 3 chữ số', type: 'three_digit_multiply' },
@@ -28,6 +34,45 @@ const SEMESTER_1_TYPES = [
 ];
 const MIN_SEMESTER_1_QUESTIONS = SEMESTER_1_TYPES.length; // 18
 
+const SEMESTER_2_TYPES: SemesterTypeItem[] = [
+  { label: 'Phép cộng', type: 'addition', group: 'number_ops' },
+  { label: 'Phép trừ', type: 'subtraction', group: 'number_ops' },
+  { label: 'Nhân 2 chữ số', type: 'two_digit_multiply', group: 'number_ops' },
+  { label: 'Chia 2 chữ số', type: 'two_digit_divide', group: 'number_ops' },
+  { label: 'Nhân 3 chữ số', type: 'three_digit_multiply', group: 'number_ops' },
+  { label: 'Chia 3 chữ số', type: 'three_digit_divide', group: 'number_ops' },
+  { label: 'Chia có dư', type: 'division_with_remainder', group: 'number_ops' },
+  { label: 'Đặt tính rồi tính', type: 'review_written_calculation', group: 'number_ops' },
+  { label: 'Biểu thức có ngoặc', type: 'review_expression', group: 'number_ops' },
+  { label: 'Làm tròn số', type: 'review_rounding', group: 'number_ops' },
+  { label: 'Số La Mã', type: 'review_roman_numerals', group: 'number_ops' },
+  { label: 'Giá trị chữ số / Số liền trước sau', type: 'review_digit_value', group: 'number_ops' },
+
+  { label: 'Đổi đơn vị', type: 'review_unit_conversion', group: 'measurement' },
+  { label: 'Tính ngày tháng', type: 'review_date_calculation', group: 'measurement' },
+  { label: 'Toán tiền Việt Nam', type: 'review_money', group: 'measurement' },
+  { label: 'Tháng có 30/31 ngày', type: 'review_month_days', group: 'measurement' },
+
+  { label: 'Khối lập phương', type: 'review_cube_properties', group: 'geometry' },
+  { label: 'Trung điểm', type: 'geometry_midpoint', group: 'geometry' },
+  { label: 'Hình chữ nhật', type: 'geometry_rectangle', group: 'geometry' },
+  { label: 'Hình vuông', type: 'geometry_square', group: 'geometry' },
+  { label: 'Hình tròn', type: 'geometry_circle', group: 'geometry' },
+
+  { label: 'Toán có lời văn: Hơn kém', type: 'word_problem_more_less', group: 'word_problem' },
+  { label: 'Toán có lời văn: Gấp/Giảm', type: 'word_problem_multiply_divide', group: 'word_problem' },
+  { label: 'Toán có lời văn: Rút đơn vị', type: 'word_problem_unit_conversion', group: 'word_problem' },
+  { label: 'Toán có lời văn: Chia có dư', type: 'word_problem_division_remainder', group: 'word_problem' }
+];
+const MIN_SEMESTER_2_QUESTIONS = SEMESTER_2_TYPES.length;
+
+const SEMESTER_2_GROUP_LABELS: Record<NonNullable<SemesterTypeItem['group']>, string> = {
+  number_ops: 'Số và phép tính',
+  measurement: 'Đại lượng và đo đại lượng',
+  geometry: 'Hình học và đo lường',
+  word_problem: 'Toán có lời văn'
+};
+
 interface StudentSetupProps {
   onStart: (settings: ProblemSettings) => void;
   initialSettings?: ProblemSettings;
@@ -43,7 +88,7 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
   const [difficulty, setDifficulty] = useState(initialSettings?.difficulty || 'medium');
   const [isExpanded, setIsExpanded] = useState(true);
   const [isReviewExpanded, setIsReviewExpanded] = useState(true);
-  const [showSemester1Modal, setShowSemester1Modal] = useState(false);
+  const [reviewModalType, setReviewModalType] = useState<'semester1' | 'semester2' | null>(null);
 
   const gradeConfig = getGradeConfig(grade);
   const gradeLabel = gradeConfig?.label || 'Toán Lớp 3';
@@ -60,23 +105,30 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
   const selectedGrade4Count = grade4Types.filter(t => enabledTypes.includes(t.id)).length;
   const selectedGrade5Count = grade5Types.filter(t => enabledTypes.includes(t.id)).length;
 
-  // Check if semester 1 review is selected
+  // Check if review modes are selected
   const isSemester1Selected = enabledTypes.includes('review_semester_1');
+  const isSemester2Selected = enabledTypes.includes('review_semester_2');
 
   // Standard question quantities
   const standardQuantities = [10, 15, 20, 25, 30, 50];
 
   // Filter available quantities based on selection
-  const availableQuantities = isSemester1Selected
-    ? standardQuantities.filter(q => q >= MIN_SEMESTER_1_QUESTIONS)
+  const minimumQuestionCount = isSemester1Selected
+    ? MIN_SEMESTER_1_QUESTIONS
+    : isSemester2Selected
+      ? MIN_SEMESTER_2_QUESTIONS
+      : 0;
+
+  const availableQuantities = minimumQuestionCount > 0
+    ? standardQuantities.filter(q => q >= minimumQuestionCount)
     : standardQuantities;
 
-  // Auto-adjust question quantity if semester1 is selected and current quantity is too low
+  // Auto-adjust question quantity if selected review mode requires higher minimum
   useEffect(() => {
-    if (isSemester1Selected && questionQuantity < MIN_SEMESTER_1_QUESTIONS) {
-      setQuestionQuantity(availableQuantities[0]); // Minimum available for semester1
+    if (minimumQuestionCount > 0 && questionQuantity < minimumQuestionCount) {
+      setQuestionQuantity(availableQuantities[0]);
     }
-  }, [isSemester1Selected, questionQuantity, availableQuantities]);
+  }, [minimumQuestionCount, questionQuantity, availableQuantities]);
 
   // Handle grade type toggle
   const handleTypeToggle = (typeId: string) => {
@@ -99,7 +151,10 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
     setEnabledTypes([typeId]);
     setIsExpanded(false); // Collapse grade panel
     if (typeId === 'review_semester_1') {
-      setShowSemester1Modal(true);
+      setReviewModalType('semester1');
+    }
+    if (typeId === 'review_semester_2') {
+      setReviewModalType('semester2');
     }
   };
 
@@ -430,9 +485,9 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Số câu hỏi
-            {isSemester1Selected && (
+            {minimumQuestionCount > 0 && (
               <span className="text-purple-600 text-xs ml-2">
-                (Tối thiểu {MIN_SEMESTER_1_QUESTIONS} câu)
+                (Tối thiểu {minimumQuestionCount} câu)
               </span>
             )}
           </label>
@@ -496,28 +551,58 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
         </button>
       </div>
 
-      {/* Semester 1 Types Modal */}
-      {showSemester1Modal && (
+      {/* Review Types Modal */}
+      {reviewModalType && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-purple-800 mb-4">
-              Ôn tập Học kỳ 1 bao gồm:
+              {reviewModalType === 'semester1' ? 'Ôn tập Học kỳ 1 bao gồm:' : 'Ôn tập Học kỳ 2 bao gồm:'}
             </h2>
-            <ul className="space-y-2 mb-6">
-              {SEMESTER_1_TYPES.map((item, index) => (
-                <li key={index} className="flex items-center text-gray-700">
-                  <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm mr-3">
-                    {index + 1}
-                  </span>
-                  {item.label}
-                </li>
-              ))}
-            </ul>
+            {reviewModalType === 'semester1' ? (
+              <ul className="space-y-2 mb-6">
+                {SEMESTER_1_TYPES.map((item, index) => (
+                  <li key={index} className="flex items-center text-gray-700">
+                    <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm mr-3">
+                      {index + 1}
+                    </span>
+                    {item.label}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="mb-6 space-y-4">
+                {(['number_ops', 'measurement', 'geometry', 'word_problem'] as const).map((groupKey) => {
+                  const groupItems = SEMESTER_2_TYPES.filter(item => item.group === groupKey);
+                  if (groupItems.length === 0) return null;
+
+                  return (
+                    <div key={groupKey}>
+                      <h3 className="font-semibold text-purple-700 mb-2">
+                        {SEMESTER_2_GROUP_LABELS[groupKey]}
+                      </h3>
+                      <ul className="space-y-2">
+                        {groupItems.map((item) => {
+                          const globalIndex = SEMESTER_2_TYPES.findIndex(t => t.type === item.type) + 1;
+                          return (
+                            <li key={item.type} className="flex items-center text-gray-700">
+                              <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm mr-3">
+                                {globalIndex}
+                              </span>
+                              {item.label}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
             <p className="text-sm text-gray-500 mb-4">
-              Tối thiểu {MIN_SEMESTER_1_QUESTIONS} câu hỏi để đảm bảo mỗi dạng có ít nhất 1 câu.
+              Tối thiểu {reviewModalType === 'semester1' ? MIN_SEMESTER_1_QUESTIONS : MIN_SEMESTER_2_QUESTIONS} câu hỏi để đảm bảo mỗi dạng có ít nhất 1 câu.
             </p>
             <button
-              onClick={() => setShowSemester1Modal(false)}
+              onClick={() => setReviewModalType(null)}
               className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-xl"
             >
               Đã hiểu
