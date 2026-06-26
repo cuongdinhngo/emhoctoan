@@ -16,6 +16,12 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({ hour, minute, size = 2
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Pull colors from design tokens (CSS vars) so the clock matches the theme.
+    const css = getComputedStyle(document.documentElement);
+    const inkColor = css.getPropertyValue('--c-ink').trim() || '#22303A';
+    const primaryColor = css.getPropertyValue('--c-primary').trim() || '#3B82F6';
+    const surfaceColor = css.getPropertyValue('--c-surface').trim() || '#FFFFFF';
+
     const centerX = size / 2;
     const centerY = size / 2;
     const radius = size / 2 - 10;
@@ -26,9 +32,9 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({ hour, minute, size = 2
     // Draw clock face (white background)
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = surfaceColor;
     ctx.fill();
-    ctx.strokeStyle = '#374151';
+    ctx.strokeStyle = inkColor;
     ctx.lineWidth = 3;
     ctx.stroke();
 
@@ -47,14 +53,14 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({ hour, minute, size = 2
         centerX + Math.cos(angle) * outerRadius,
         centerY + Math.sin(angle) * outerRadius
       );
-      ctx.strokeStyle = '#374151';
+      ctx.strokeStyle = inkColor;
       ctx.lineWidth = i % 5 === 0 ? 2 : 1;
       ctx.stroke();
     }
 
     // Draw hour numbers
-    ctx.font = `bold ${size / 10}px Arial`;
-    ctx.fillStyle = '#1f2937';
+    ctx.font = `bold ${size / 10}px "Baloo 2", system-ui, sans-serif`;
+    ctx.fillStyle = inkColor;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
@@ -80,7 +86,7 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({ hour, minute, size = 2
       centerX + Math.cos(hourAngle) * hourHandLength,
       centerY + Math.sin(hourAngle) * hourHandLength
     );
-    ctx.strokeStyle = '#1f2937';
+    ctx.strokeStyle = inkColor;
     ctx.lineWidth = 6;
     ctx.lineCap = 'round';
     ctx.stroke();
@@ -93,7 +99,7 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({ hour, minute, size = 2
       centerX + Math.cos(minuteAngle) * minuteHandLength,
       centerY + Math.sin(minuteAngle) * minuteHandLength
     );
-    ctx.strokeStyle = '#3b82f6';
+    ctx.strokeStyle = primaryColor;
     ctx.lineWidth = 4;
     ctx.lineCap = 'round';
     ctx.stroke();
@@ -101,7 +107,7 @@ export const AnalogClock: React.FC<AnalogClockProps> = ({ hour, minute, size = 2
     // Draw center dot
     ctx.beginPath();
     ctx.arc(centerX, centerY, 6, 0, 2 * Math.PI);
-    ctx.fillStyle = '#1f2937';
+    ctx.fillStyle = inkColor;
     ctx.fill();
 
   }, [hour, minute, size]);

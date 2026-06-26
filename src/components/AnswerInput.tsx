@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from './ui/Button';
+import { cx } from './ui/cx';
 
 interface AnswerInputProps {
   onSubmit: (answer: number) => void;
@@ -62,36 +64,33 @@ export const AnswerInput: React.FC<AnswerInputProps> = ({
     }
   };
 
-  const getInputStyle = () => {
-    if (showResult && (userAnswer !== undefined || userTextAnswer !== undefined)) {
-      return 'border-green-500 bg-green-50';
-    }
-    return 'border-gray-300 focus:border-blue-500';
-  };
+  const answered = showResult && (userAnswer !== undefined || userTextAnswer !== undefined);
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto">
-      <div className="relative">
-        <input
-          id="answer-input"
-          type={isTextInput ? 'text' : 'number'}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          disabled={disabled}
-          placeholder={isTextInput ? 'Ví dụ: 9 giờ 30 phút' : 'Nhập đáp án...'}
-          className={`w-full px-6 py-4 text-2xl text-center border-2 rounded-xl focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed ${getInputStyle()}`}
-        />
-      </div>
+    <form onSubmit={handleSubmit} className="mx-auto w-full max-w-md">
+      <input
+        id="answer-input"
+        type={isTextInput ? 'text' : 'number'}
+        inputMode={isTextInput ? 'text' : 'numeric'}
+        autoComplete="off"
+        aria-label="Đáp án của con"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyPress={handleKeyPress}
+        disabled={disabled}
+        placeholder={isTextInput ? 'Ví dụ: 9 giờ 30 phút' : 'Nhập đáp án…'}
+        className={cx(
+          'min-h-touch w-full rounded-lg border-2 px-6 py-4 text-center font-display text-answer text-ink tabular-nums',
+          'placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:text-ink-muted',
+          'focus:outline-none focus-visible:shadow-focus disabled:bg-base disabled:cursor-not-allowed',
+          answered ? 'border-success bg-success-soft' : 'border-line focus:border-primary',
+        )}
+      />
 
       {!showResult && (
-        <button
-          type="submit"
-          disabled={disabled || !input.trim()}
-          className="mt-4 w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
-        >
+        <Button type="submit" variant="primary" size="lg" fullWidth disabled={disabled || !input.trim()} className="mt-4">
           Kiểm tra
-        </button>
+        </Button>
       )}
     </form>
   );

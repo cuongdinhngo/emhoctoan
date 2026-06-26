@@ -3,6 +3,11 @@ import { MathProblem } from '../types';
 import { PROBLEM_TYPE_LABELS } from '../constants/problemTypes';
 import { AnalogClock } from './AnalogClock';
 import { FractionOptions } from './FractionGrid';
+import { Card } from './ui/Card';
+import { Badge } from './ui/Badge';
+import { ProgressPill } from './ui/ProgressPill';
+import { CheckIcon, XIcon } from './ui/icons';
+import { cx } from './ui/cx';
 
 interface ProblemDisplayProps {
   problem: MathProblem;
@@ -11,8 +16,19 @@ interface ProblemDisplayProps {
   showResult?: boolean;
 }
 
-export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({ 
-  problem, 
+// Light confetti burst on a correct answer (MOTION_INTENSITY=5). Pure
+// decoration — collapses to nothing under prefers-reduced-motion (handled
+// globally in index.css).
+const CONFETTI = [
+  { left: '12%', color: 'bg-secondary', delay: '0ms' },
+  { left: '30%', color: 'bg-primary', delay: '80ms' },
+  { left: '50%', color: 'bg-success', delay: '40ms' },
+  { left: '70%', color: 'bg-violet', delay: '120ms' },
+  { left: '88%', color: 'bg-teal', delay: '60ms' },
+];
+
+export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
+  problem,
   questionNumber,
   totalQuestions,
   showResult = false
@@ -38,71 +54,43 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   if (clockData) displayQuestion = displayQuestion.replace(/\[CLOCK:\d+:\d+\]\s*/, '');
   if (fractionOptions) displayQuestion = displayQuestion.replace(/\[FRACTION_OPTIONS:\[.*?\]\]\s*/, '');
 
-  // Check if this question has long text that needs smaller font
+  // Longer questions get a smaller (but still large) type scale.
   const isLongQuestion = displayQuestion.length > 50;
-  const needsSmallerFont = isLongQuestion;
+  const questionFontSize = isLongQuestion
+    ? 'text-question-sm md:text-question leading-relaxed'
+    : 'text-question md:text-question-lg';
 
-  // Determine font size based on question length
-  const questionFontSize = needsSmallerFont ? 'text-2xl md:text-3xl' : 'text-4xl md:text-6xl';
+  const badges = (
+    <div className="flex flex-wrap items-center gap-2">
+      <Badge tone="primary">{getTypeLabel(problem.type)}</Badge>
+      {problem.originalType && <Badge tone="violet">{getTypeLabel(problem.originalType)}</Badge>}
+      <Badge tone="teal">{getQuestionTypeLabel(problem.questionType)}</Badge>
+    </div>
+  );
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8">
+    <Card>
       {/* Header */}
       <div className="mb-6">
         {/* Web Layout */}
-        <div className="hidden lg:flex lg:justify-between lg:items-center">
-          <div className="text-lg font-semibold text-gray-600">
-            Câu {questionNumber}/{totalQuestions}
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-              {getTypeLabel(problem.type)}
-            </span>
-            {/* Original type badge for semester1 review */}
-            {problem.originalType && (
-              <span className="inline-block bg-purple-100 text-purple-700 text-sm font-medium px-3 py-1 rounded-full">
-                {getTypeLabel(problem.originalType)}
-              </span>
-            )}
-            <span className="inline-block bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
-              {getQuestionTypeLabel(problem.questionType)}
-            </span>
-          </div>
+        <div className="hidden items-center justify-between gap-4 lg:flex">
+          <ProgressPill current={questionNumber} total={totalQuestions} className="max-w-xs" />
+          {badges}
         </div>
-
         {/* Mobile Layout */}
         <div className="lg:hidden">
-          {/* First Row: Question Number */}
-          <div className="text-lg font-semibold text-gray-600 mb-3">
-            Câu {questionNumber}/{totalQuestions}
-          </div>
-          {/* Second Row: Question Type & Problem Type */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-              {getTypeLabel(problem.type)}
-            </span>
-            {/* Original type badge for semester1 review */}
-            {problem.originalType && (
-              <span className="inline-block bg-purple-100 text-purple-700 text-sm font-medium px-3 py-1 rounded-full">
-                {getTypeLabel(problem.originalType)}
-              </span>
-            )}
-            <span className="inline-block bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
-              {getQuestionTypeLabel(problem.questionType)}
-            </span>
-          </div>
+          <ProgressPill current={questionNumber} total={totalQuestions} className="mb-3" />
+          {badges}
         </div>
       </div>
-      
+
       {/* Question */}
-      <div className="text-center mb-8">
-        {/* Clock display for clock reading questions */}
+      <div className="mb-8 text-center">
         {clockData && (
           <div className="mb-6">
             <AnalogClock hour={clockData.hour} minute={clockData.minute} size={200} />
           </div>
         )}
-        {/* Fraction grid display for visual fraction questions */}
         {fractionOptions && (
           <div className="mb-6">
             <FractionOptions
@@ -113,51 +101,74 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             />
           </div>
         )}
-        <div className={`${questionFontSize} font-bold text-gray-800 mb-6 ${needsSmallerFont ? 'leading-relaxed' : ''}`}>
+        <div className={cx('mb-6 font-display font-bold text-ink', questionFontSize)}>
           {displayQuestion}
         </div>
       </div>
 
-      {/* Answer Display Block - Separate from question */}
+      {/* Answer Display Block - shown once the question is answered */}
       {problem.isAnswered && (
-        <div className="mt-6 pt-6 border-t-2 border-gray-200">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 space-y-4">
+        <div className="mt-6 border-t-2 border-line pt-6">
+          <div
+            className={cx(
+              'relative overflow-hidden rounded-lg p-6 animate-pop',
+              problem.isCorrect ? 'bg-success-soft' : 'bg-error-soft',
+            )}
+          >
+            {/* Confetti (correct only) */}
+            {showResult && problem.isCorrect && (
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-0" aria-hidden="true">
+                {CONFETTI.map((c, i) => (
+                  <span
+                    key={i}
+                    className={cx('absolute top-0 h-2.5 w-2.5 rounded-sm animate-confetti', c.color)}
+                    style={{ left: c.left, animationDelay: c.delay }}
+                  />
+                ))}
+              </div>
+            )}
+
             {/* User's Answer */}
-            <div className="flex items-center justify-center space-x-4">
-              <span className="text-lg font-medium text-gray-700">Đáp án của bạn:</span>
-              <span className={`text-3xl md:text-4xl font-bold ${problem.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-lg font-medium text-ink-muted">Đáp án của con:</span>
+              <span className={cx('font-display text-answer md:text-question-sm tabular-nums', problem.isCorrect ? 'text-success-ink' : 'text-error-ink')}>
                 {problem.userTextAnswer || problem.userAnswer}
               </span>
             </div>
 
             {/* Correct Answer (if wrong) */}
             {!problem.isCorrect && (
-              <div className="flex items-center justify-center space-x-4 pt-2 border-t border-gray-300">
-                <span className="text-lg font-medium text-gray-700">Đáp án đúng:</span>
-                <span className="text-3xl md:text-4xl font-bold text-blue-600">
+              <div className="mt-2 flex items-center justify-center gap-4 border-t border-error/30 pt-2">
+                <span className="text-lg font-medium text-ink-muted">Đáp án đúng:</span>
+                <span className="font-display text-answer md:text-question-sm tabular-nums text-success-ink">
                   {problem.textAnswer || problem.answer}
                 </span>
               </div>
             )}
-            
-            {/* Result Message */}
+
+            {/* Result Message — icon + text + color (not color alone) */}
             {showResult && (
-              <div className={`text-xl md:text-2xl font-semibold text-center pt-2 ${problem.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                {problem.isCorrect ? '🎉 Đúng rồi!' : '😔 Sai rồi, cố gắng nhé!'}
-              </div>
-            )}
-            
-            {/* Fireworks Animation for Correct Answer */}
-            {showResult && problem.isCorrect && (
-              <div className="flex justify-center items-center space-x-2 pt-2">
-                <div className="text-3xl animate-bounce">🎆</div>
-                <div className="text-2xl animate-pulse">✨</div>
-                <div className="text-xl animate-ping">🎊</div>
+              <div
+                className={cx(
+                  'mt-3 flex items-center justify-center gap-2 text-center text-xl font-bold md:text-2xl',
+                  problem.isCorrect ? 'text-success-ink' : 'text-error-ink',
+                )}
+                role="status"
+              >
+                <span
+                  className={cx(
+                    'inline-flex h-9 w-9 items-center justify-center rounded-pill text-white',
+                    problem.isCorrect ? 'bg-success animate-bounce-soft' : 'bg-error',
+                  )}
+                >
+                  {problem.isCorrect ? <CheckIcon size={22} /> : <XIcon size={22} />}
+                </span>
+                {problem.isCorrect ? 'Đúng rồi! Giỏi lắm!' : 'Chưa đúng, cố gắng nhé!'}
               </div>
             )}
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 };

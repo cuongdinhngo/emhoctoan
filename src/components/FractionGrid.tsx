@@ -43,7 +43,7 @@ export const FractionGrid: React.FC<FractionGridProps> = ({
             cx={x}
             cy={y}
             r={dotRadius}
-            fill={isCircled ? '#3b82f6' : '#1f2937'}
+            fill={isCircled ? 'var(--c-primary)' : 'var(--c-ink)'}
           />
           {/* Circle around selected dots */}
           {isCircled && (
@@ -52,7 +52,7 @@ export const FractionGrid: React.FC<FractionGridProps> = ({
               cy={y}
               r={dotRadius * 2}
               fill="none"
-              stroke="#3b82f6"
+              stroke="var(--c-primary)"
               strokeWidth={2}
               strokeDasharray="4 2"
             />
@@ -64,34 +64,34 @@ export const FractionGrid: React.FC<FractionGridProps> = ({
 
   const borderColor = showResult
     ? isCorrect
-      ? '#22c55e'
+      ? 'var(--c-success)'
       : isSelected
-        ? '#ef4444'
-        : '#e5e7eb'
+        ? 'var(--c-error)'
+        : 'var(--c-line)'
     : isSelected
-      ? '#3b82f6'
-      : '#e5e7eb';
+      ? 'var(--c-primary)'
+      : 'var(--c-line)';
 
   const bgColor = showResult
     ? isCorrect
-      ? '#f0fdf4'
+      ? 'var(--c-success-soft)'
       : isSelected
-        ? '#fef2f2'
-        : 'white'
+        ? 'var(--c-error-soft)'
+        : 'var(--c-surface)'
     : isSelected
-      ? '#eff6ff'
-      : 'white';
+      ? 'var(--c-primary-soft)'
+      : 'var(--c-surface)';
 
   return (
     <div
-      className="flex flex-col items-center p-2 rounded-lg border-2 transition-all"
+      className="flex flex-col items-center p-2 rounded-lg border-2 transition-[transform,border-color,background-color]"
       style={{
         borderColor,
         backgroundColor: bgColor
       }}
     >
       {label && (
-        <div className="text-lg font-bold text-gray-700 mb-1">{label}</div>
+        <div className="mb-1 font-display text-lg font-bold text-ink">{label}</div>
       )}
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         {/* Background */}
@@ -106,7 +106,7 @@ export const FractionGrid: React.FC<FractionGridProps> = ({
         {dots}
       </svg>
       {showResult && isCorrect && (
-        <div className="text-green-600 text-sm font-medium mt-1">Đúng</div>
+        <div className="mt-1 text-sm font-semibold text-success-ink">✓ Đúng</div>
       )}
     </div>
   );

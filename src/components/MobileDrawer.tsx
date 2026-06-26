@@ -1,5 +1,8 @@
 import React from 'react';
 import { QuestionListItem } from '../types';
+import { QuestionTile, QuestionLegend } from './QuestionTile';
+import { XIcon } from './ui/icons';
+import { cx } from './ui/cx';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -9,28 +12,12 @@ interface MobileDrawerProps {
   currentQuestionId?: string;
 }
 
-export const MobileDrawer: React.FC<MobileDrawerProps> = ({ 
-  isOpen, 
-  onClose, 
-  questions, 
+export const MobileDrawer: React.FC<MobileDrawerProps> = ({
+  isOpen,
+  onClose,
+  questions,
   onQuestionSelect
 }) => {
-  const getQuestionStatusIcon = (question: QuestionListItem) => {
-    if (question.isCurrent) return '📍';
-    if (question.isAnswered) {
-      return question.isCorrect ? '✅' : '❌';
-    }
-    return '⭕';
-  };
-
-  const getQuestionStatusColor = (question: QuestionListItem) => {
-    if (question.isCurrent) return 'bg-blue-100 border-blue-500 text-blue-700';
-    if (question.isAnswered) {
-      return question.isCorrect ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700';
-    }
-    return 'bg-gray-100 border-gray-300 text-gray-600';
-  };
-
   const handleQuestionClick = (questionId: string) => {
     onQuestionSelect(questionId);
     onClose(); // Close drawer after selection
@@ -40,73 +27,40 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
     <>
       {/* Overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        <div
+          className="fixed inset-0 z-40 bg-ink/50 lg:hidden"
           onClick={onClose}
         />
       )}
-      
+
       {/* Drawer */}
-      <div className={`fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
-        isOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}>
+      <div className={cx(
+        'fixed right-0 top-0 z-50 flex h-full w-80 max-w-[85vw] flex-col bg-surface shadow-card-hover',
+        'transform transition-transform duration-300 ease-in-out lg:hidden',
+        isOpen ? 'translate-x-0' : 'translate-x-full',
+      )}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
-          <h3 className="text-lg font-bold text-gray-800">Danh sách câu hỏi</h3>
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-line p-4">
+          <h3 className="font-display text-lg font-bold text-ink">Danh sách câu hỏi</h3>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Đóng"
+            className="flex h-touch w-touch items-center justify-center rounded-pill text-ink-muted transition-colors hover:bg-base hover:text-ink focus-visible:outline-none focus-visible:shadow-focus"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <XIcon />
           </button>
         </div>
-        
+
         {/* Questions List */}
-        <div className="p-4 flex-1 overflow-y-auto pb-20">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 pb-20">
           <div className="space-y-2">
             {questions.map((question) => (
-              <button
-                key={question.id}
-                onClick={() => handleQuestionClick(question.id)}
-                className={`w-full p-3 rounded-lg border-2 text-left transition-all duration-200 hover:shadow-md ${getQuestionStatusColor(question)}`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg">{getQuestionStatusIcon(question)}</span>
-                    <span className="font-medium">Câu {question.questionNumber}</span>
-                  </div>
-                  {question.isAnswered && (
-                    <span className="text-sm font-bold">
-                      {question.isCorrect ? '+1' : '0'}
-                    </span>
-                  )}
-                </div>
-              </button>
+              <QuestionTile key={question.id} question={question} onSelect={handleQuestionClick} />
             ))}
           </div>
-          
-          {/* Legend */}
-          <div className="mt-6 p-3 bg-blue-50 rounded-lg">
-            <div className="text-sm text-blue-700">
-              <div className="flex items-center space-x-2 mb-1">
-                <span>📍</span>
-                <span>Câu hiện tại</span>
-              </div>
-              <div className="flex items-center space-x-2 mb-1">
-                <span>✅</span>
-                <span>Đã trả lời đúng</span>
-              </div>
-              <div className="flex items-center space-x-2 mb-1">
-                <span>❌</span>
-                <span>Đã trả lời sai</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span>⭕</span>
-                <span>Chưa trả lời</span>
-              </div>
-            </div>
+
+          <div className="mt-6">
+            <QuestionLegend />
           </div>
         </div>
       </div>
