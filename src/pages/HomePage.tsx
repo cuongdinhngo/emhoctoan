@@ -1,43 +1,33 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { GRADES, GradeConfig } from '../constants/grades';
+import { Badge } from '../components/ui/Badge';
+import { cx } from '../components/ui/cx';
+
+// Each grade gets a friendly identity tint, all drawn from design tokens.
+const gradeTheme: Record<string, { soft: string; text: string; ring: string }> = {
+  blue: { soft: 'bg-primary-soft', text: 'text-primary-strong', ring: 'hover:border-primary' },
+  green: { soft: 'bg-teal-soft', text: 'text-teal-ink', ring: 'hover:border-teal' },
+  purple: { soft: 'bg-violet-soft', text: 'text-violet-ink', ring: 'hover:border-violet' },
+};
+
+const gradeNumber = (id: string) => (id === 'grade3' ? '3' : id === 'grade4' ? '4' : '5');
 
 const GradeCard: React.FC<{ grade: GradeConfig }> = ({ grade }) => {
-  const colorClasses: Record<string, { bg: string; hover: string; border: string; text: string }> = {
-    blue: {
-      bg: 'bg-blue-50',
-      hover: 'hover:bg-blue-100 hover:border-blue-300',
-      border: 'border-blue-200',
-      text: 'text-blue-600'
-    },
-    green: {
-      bg: 'bg-green-50',
-      hover: 'hover:bg-green-100 hover:border-green-300',
-      border: 'border-green-200',
-      text: 'text-green-600'
-    },
-    purple: {
-      bg: 'bg-purple-50',
-      hover: 'hover:bg-purple-100 hover:border-purple-300',
-      border: 'border-purple-200',
-      text: 'text-purple-600'
-    }
-  };
-
-  const colors = colorClasses[grade.color] || colorClasses.blue;
+  const theme = gradeTheme[grade.color] || gradeTheme.blue;
 
   if (!grade.isAvailable) {
     return (
-      <div className={`relative p-6 rounded-2xl border-2 ${colors.bg} ${colors.border} opacity-60 cursor-not-allowed`}>
-        <div className="absolute top-3 right-3 bg-gray-500 text-white text-xs px-2 py-1 rounded-full">
-          Sắp ra mắt
+      <div className={cx('relative rounded-xl border-2 border-line p-6 opacity-70', theme.soft)}>
+        <div className="absolute right-3 top-3">
+          <Badge tone="neutral">Sắp ra mắt</Badge>
         </div>
         <div className="text-center">
-          <div className="text-5xl mb-4">
-            {grade.id === 'grade3' ? '3' : grade.id === 'grade4' ? '4' : '5'}
+          <div className={cx('mb-3 font-display text-7xl font-extrabold tabular-nums', theme.text)}>
+            {gradeNumber(grade.id)}
           </div>
-          <h2 className={`text-xl font-bold mb-2 ${colors.text}`}>{grade.label}</h2>
-          <p className="text-gray-500 text-sm">{grade.description}</p>
+          <h2 className="mb-2 font-display text-2xl font-bold text-ink">{grade.label}</h2>
+          <p className="text-sm text-ink-muted">{grade.description}</p>
         </div>
       </div>
     );
@@ -46,14 +36,19 @@ const GradeCard: React.FC<{ grade: GradeConfig }> = ({ grade }) => {
   return (
     <Link
       to={grade.route}
-      className={`block p-6 rounded-2xl border-2 ${colors.bg} ${colors.border} ${colors.hover} transition-all duration-200 transform hover:scale-105 hover:shadow-lg`}
+      className={cx(
+        'block rounded-xl border-2 border-line p-6 transition-[transform,border-color,box-shadow] duration-200',
+        'hover:-translate-y-1 hover:shadow-card-hover focus-visible:outline-none focus-visible:shadow-focus',
+        theme.soft,
+        theme.ring,
+      )}
     >
       <div className="text-center">
-        <div className={`text-5xl mb-4 font-bold ${colors.text}`}>
-          {grade.id === 'grade3' ? '3' : grade.id === 'grade4' ? '4' : '5'}
+        <div className={cx('mb-3 font-display text-7xl font-extrabold tabular-nums', theme.text)}>
+          {gradeNumber(grade.id)}
         </div>
-        <h2 className={`text-xl font-bold mb-2 ${colors.text}`}>{grade.label}</h2>
-        <p className="text-gray-600 text-sm">{grade.description}</p>
+        <h2 className="mb-2 font-display text-2xl font-bold text-ink">{grade.label}</h2>
+        <p className="text-sm text-ink-muted">{grade.description}</p>
       </div>
     </Link>
   );
@@ -61,33 +56,29 @@ const GradeCard: React.FC<{ grade: GradeConfig }> = ({ grade }) => {
 
 export const HomePage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-center space-x-3">
-            <div className="text-3xl">&#129518;</div>
-            <h1 className="text-2xl font-bold text-gray-800">Em Học Toán</h1>
-          </div>
+    <div className="min-h-[100dvh] bg-base">
+      <header className="border-b border-line bg-surface">
+        <div className="mx-auto flex max-w-6xl items-center justify-center gap-3 px-4 py-4">
+          <span className="text-3xl" aria-hidden="true">&#129518;</span>
+          <h1 className="font-display text-2xl font-bold text-ink">Em Học Toán</h1>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-12">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Chọn lớp của con</h2>
-          <p className="text-gray-600">Luyện tập toán theo chương trình học</p>
+      <main className="mx-auto max-w-4xl px-4 py-12">
+        <div className="mb-10 text-center">
+          <h2 className="mb-3 font-display text-4xl font-bold text-ink">Chọn lớp của con</h2>
+          <p className="text-ink-muted">Luyện tập toán theo chương trình học</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {GRADES.map((grade) => (
             <GradeCard key={grade.id} grade={grade} />
           ))}
         </div>
 
-        <div className="mt-12 text-center text-gray-500 text-sm">
-          <p>Ứng dụng giúp các em học sinh luyện tập toán theo chương trình SGK</p>
-        </div>
+        <p className="mt-12 text-center text-sm text-ink-muted">
+          Ứng dụng giúp các em học sinh luyện tập toán theo chương trình SGK
+        </p>
       </main>
     </div>
   );

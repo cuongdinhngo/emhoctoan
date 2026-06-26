@@ -4,6 +4,10 @@ import { PROBLEM_TYPES_CONFIG, PROBLEM_GROUP_LABELS, ProblemGroup } from '../con
 import { GRADE4_PROBLEM_TYPES_CONFIG, GRADE4_PROBLEM_GROUP_LABELS, Grade4ProblemGroup } from '../constants/grade4ProblemTypes';
 import { GRADE5_PROBLEM_TYPES_CONFIG, GRADE5_PROBLEM_GROUP_LABELS, Grade5ProblemGroup } from '../constants/grade5ProblemTypes';
 import { Grade, getGradeConfig } from '../constants/grades';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
+import { ChevronDownIcon } from './ui/icons';
+import { cx } from './ui/cx';
 
 // Types included in Semester 1 Review (Grade 3)
 type SemesterTypeItem = {
@@ -79,6 +83,42 @@ interface StudentSetupProps {
   grade?: Grade;
 }
 
+// Per-grade panel identity, all from tokens (Color Consistency: tints only).
+type PanelTheme = {
+  headerBg: string;
+  headerText: string;
+  chevron: string;
+  count: string;
+  groupBg: string;
+  groupText: string;
+  groupCount: string;
+  itemHover: string;
+  accent: string; // checkbox/radio accent-color utility
+};
+
+const PANEL_THEMES: Record<'primary' | 'violet' | 'teal' | 'secondary', PanelTheme> = {
+  primary: {
+    headerBg: 'bg-primary-soft hover:bg-primary-soft/70', headerText: 'text-ink', chevron: 'text-primary',
+    count: 'text-primary-strong', groupBg: 'bg-base', groupText: 'text-ink', groupCount: 'text-ink-muted',
+    itemHover: 'hover:bg-primary-soft', accent: 'accent-primary',
+  },
+  violet: {
+    headerBg: 'bg-violet-soft hover:bg-violet-soft/70', headerText: 'text-violet-ink', chevron: 'text-violet',
+    count: 'text-violet-ink', groupBg: 'bg-violet-soft', groupText: 'text-violet-ink', groupCount: 'text-violet-ink',
+    itemHover: 'hover:bg-violet-soft', accent: 'accent-violet',
+  },
+  teal: {
+    headerBg: 'bg-teal-soft hover:bg-teal-soft/70', headerText: 'text-teal-ink', chevron: 'text-teal',
+    count: 'text-teal-ink', groupBg: 'bg-teal-soft', groupText: 'text-teal-ink', groupCount: 'text-teal-ink',
+    itemHover: 'hover:bg-teal-soft', accent: 'accent-teal',
+  },
+  secondary: {
+    headerBg: 'bg-secondary-soft hover:bg-secondary-soft/70', headerText: 'text-secondary-strong', chevron: 'text-secondary',
+    count: 'text-secondary-strong', groupBg: 'bg-secondary-soft', groupText: 'text-secondary-strong', groupCount: 'text-secondary-strong',
+    itemHover: 'hover:bg-secondary-soft', accent: 'accent-secondary',
+  },
+};
+
 export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSettings, grade = 'grade3' }) => {
   const [studentName, setStudentName] = useState(initialSettings?.studentName || '');
   const [questionQuantity, setQuestionQuantity] = useState(initialSettings?.questionQuantity || 25);
@@ -89,6 +129,7 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
   const [isExpanded, setIsExpanded] = useState(true);
   const [isReviewExpanded, setIsReviewExpanded] = useState(true);
   const [reviewModalType, setReviewModalType] = useState<'semester1' | 'semester2' | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const gradeConfig = getGradeConfig(grade);
   const gradeLabel = gradeConfig?.label || 'Toán Lớp 3';
@@ -160,15 +201,15 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
 
   const handleStart = () => {
     if (!studentName.trim()) {
-      alert('Vui lòng nhập tên học sinh!');
+      setError('Vui lòng nhập tên học sinh để bắt đầu.');
+      document.getElementById('student-name')?.focus();
       return;
     }
-
     if (enabledTypes.length === 0) {
-      alert('Vui lòng chọn ít nhất một loại bài tập!');
+      setError('Vui lòng chọn ít nhất một loại bài tập.');
       return;
     }
-
+    setError(null);
     onStart({
       studentName: studentName.trim(),
       questionQuantity,
@@ -178,74 +219,120 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
     });
   };
 
+  // Reusable type checkbox row
+  const TypeCheckbox = ({ id, label, description, theme }: { id: string; label: string; description: string; theme: PanelTheme }) => (
+    <label className={cx('flex min-h-touch cursor-pointer items-center rounded-md border border-line p-3', theme.itemHover)}>
+      <input
+        type="checkbox"
+        checked={enabledTypes.includes(id)}
+        onChange={() => handleTypeToggle(id)}
+        className={cx('mr-3 h-5 w-5', theme.accent)}
+      />
+      <div>
+        <div className="font-semibold text-ink">{label}</div>
+        <div className="text-sm text-ink-muted">{description}</div>
+      </div>
+    </label>
+  );
+
+  // Reusable expansion panel header
+  const PanelHeader = ({ title, count, total, expanded, onToggle, theme }: {
+    title: string; count: number; total: number; expanded: boolean; onToggle: () => void; theme: PanelTheme;
+  }) => (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={cx('flex min-h-touch w-full items-center justify-between p-4 transition-colors', theme.headerBg)}
+    >
+      <div className="flex items-center gap-2">
+        <ChevronDownIcon size={20} className={cx('transition-transform duration-300', theme.chevron, expanded ? 'rotate-180' : '')} />
+        <span className={cx('font-display font-bold', theme.headerText)}>{title}</span>
+      </div>
+      <span className={cx('text-sm font-semibold tabular-nums', theme.count)}>{count} / {total} đã chọn</span>
+    </button>
+  );
+
   // Render Grade 3 problem types panel
-  const renderGrade3Panel = () => (
-    <>
-      {/* Problem Types - Toan lop 3 Expansion Panel */}
-      <div className="border rounded-xl overflow-hidden">
-        {/* Panel Header */}
-        <button
-          type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <svg
-              className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-            <span className="font-medium text-gray-800">Toán lớp 3</span>
+  const renderGrade3Panel = () => {
+    const t = PANEL_THEMES.primary;
+    const r = PANEL_THEMES.violet;
+    return (
+      <>
+        <div className="overflow-hidden rounded-lg border border-line">
+          <PanelHeader title="Toán lớp 3" count={selectedGrade3Count} total={grade3Types.length} expanded={isExpanded} onToggle={() => setIsExpanded(!isExpanded)} theme={t} />
+          <div className={cx('overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out', isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0')}>
+            <div className="border-t border-line p-4">
+              {(['basic', 'advanced', 'word_problem', 'other', 'geometry'] as ProblemGroup[]).map((groupKey) => {
+                const typesInGroup = grade3Types.filter(t => t.group === groupKey);
+                if (typesInGroup.length === 0) return null;
+                const selectedInGroup = typesInGroup.filter(t => enabledTypes.includes(t.id)).length;
+                const groupInfo = PROBLEM_GROUP_LABELS[groupKey];
+                return (
+                  <div key={groupKey} className="mb-4 last:mb-0">
+                    <div className={cx('mb-2 flex items-center justify-between rounded-md px-3 py-2', t.groupBg)}>
+                      <span className={cx('font-semibold', t.groupText)}>{groupInfo.icon} {groupInfo.label}</span>
+                      <span className={cx('text-sm tabular-nums', t.groupCount)}>{selectedInGroup}/{typesInGroup.length}</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                      {typesInGroup.map((type) => (
+                        <TypeCheckbox key={type.id} id={type.id} label={type.label} description={type.description} theme={t} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <span className="text-sm font-semibold text-blue-600">
-            {selectedGrade3Count} / {grade3Types.length} đã chọn
-          </span>
-        </button>
+        </div>
 
-        {/* Panel Content */}
-        <div
-          className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
-          <div className="p-4 border-t">
-            {/* Render grouped sections */}
-            {(['basic', 'advanced', 'word_problem', 'other', 'geometry'] as ProblemGroup[]).map((groupKey) => {
-              const typesInGroup = grade3Types.filter(t => t.group === groupKey);
+        <div className="overflow-hidden rounded-lg border border-line">
+          <PanelHeader title="Ôn tập" count={selectedReviewCount} total={reviewTypes.length} expanded={isReviewExpanded} onToggle={() => setIsReviewExpanded(!isReviewExpanded)} theme={r} />
+          <div className={cx('overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out', isReviewExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0')}>
+            <div className="grid grid-cols-1 gap-3 border-t border-line p-4 md:grid-cols-2">
+              {reviewTypes.map((type) => (
+                <label key={type.id} className={cx('flex min-h-touch cursor-pointer items-center rounded-md border border-line p-3', r.itemHover)}>
+                  <input
+                    type="radio"
+                    name="review-type"
+                    checked={enabledTypes.includes(type.id)}
+                    onChange={() => handleReviewSelect(type.id)}
+                    className={cx('mr-3 h-5 w-5', r.accent)}
+                  />
+                  <div>
+                    <div className="font-semibold text-ink">{type.label}</div>
+                    <div className="text-sm text-ink-muted">{type.description}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  // Render Grade 4 problem types panel
+  const renderGrade4Panel = () => {
+    const t = PANEL_THEMES.teal;
+    return (
+      <div className="overflow-hidden rounded-lg border border-line">
+        <PanelHeader title="Toán lớp 4" count={selectedGrade4Count} total={grade4Types.length} expanded={isExpanded} onToggle={() => setIsExpanded(!isExpanded)} theme={t} />
+        <div className={cx('overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out', isExpanded ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0')}>
+          <div className="border-t border-line p-4">
+            {(['large_numbers', 'divisibility', 'fractions', 'geometry', 'word_problems', 'measurement'] as Grade4ProblemGroup[]).map((groupKey) => {
+              const typesInGroup = grade4Types.filter(t => t.group === groupKey);
               if (typesInGroup.length === 0) return null;
-
               const selectedInGroup = typesInGroup.filter(t => enabledTypes.includes(t.id)).length;
-              const groupInfo = PROBLEM_GROUP_LABELS[groupKey];
-
+              const groupInfo = GRADE4_PROBLEM_GROUP_LABELS[groupKey];
               return (
                 <div key={groupKey} className="mb-4 last:mb-0">
-                  {/* Group Header */}
-                  <div className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded-lg mb-2">
-                    <span className="font-medium text-gray-700">
-                      {groupInfo.icon} {groupInfo.label}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {selectedInGroup}/{typesInGroup.length}
-                    </span>
+                  <div className={cx('mb-2 flex items-center justify-between rounded-md px-3 py-2', t.groupBg)}>
+                    <span className={cx('font-semibold', t.groupText)}>{groupInfo.icon} {groupInfo.label}</span>
+                    <span className={cx('text-sm tabular-nums', t.groupCount)}>{selectedInGroup}/{typesInGroup.length}</span>
                   </div>
-                  {/* Types in this group */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                     {typesInGroup.map((type) => (
-                      <label key={type.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={enabledTypes.includes(type.id)}
-                          onChange={() => handleTypeToggle(type.id)}
-                          className="mr-3 h-4 w-4 text-blue-600"
-                        />
-                        <div>
-                          <div className="font-medium text-gray-800">{type.label}</div>
-                          <div className="text-sm text-gray-500">{type.description}</div>
-                        </div>
-                      </label>
+                      <TypeCheckbox key={type.id} id={type.id} label={type.label} description={type.description} theme={t} />
                     ))}
                   </div>
                 </div>
@@ -254,253 +341,87 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
           </div>
         </div>
       </div>
-
-      {/* Problem Types - On tap Expansion Panel */}
-      <div className="border rounded-xl overflow-hidden">
-        {/* Panel Header */}
-        <button
-          type="button"
-          onClick={() => setIsReviewExpanded(!isReviewExpanded)}
-          className="w-full flex items-center justify-between p-4 bg-purple-50 hover:bg-purple-100 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <svg
-              className={`w-5 h-5 text-purple-600 transition-transform duration-300 ${isReviewExpanded ? 'rotate-180' : ''}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-            <span className="font-medium text-purple-800">Ôn tập</span>
-          </div>
-          <span className="text-sm font-semibold text-purple-600">
-            {selectedReviewCount} / {reviewTypes.length} đã chọn
-          </span>
-        </button>
-
-        {/* Panel Content */}
-        <div
-          className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            isReviewExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
-          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t">
-            {reviewTypes.map((type) => (
-              <label key={type.id} className="flex items-center p-3 border rounded-lg hover:bg-purple-50 cursor-pointer">
-                <input
-                  type="radio"
-                  name="review-type"
-                  checked={enabledTypes.includes(type.id)}
-                  onChange={() => handleReviewSelect(type.id)}
-                  className="mr-3 h-4 w-4 text-purple-600"
-                />
-                <div>
-                  <div className="font-medium text-gray-800">{type.label}</div>
-                  <div className="text-sm text-gray-500">{type.description}</div>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-
-  // Render Grade 4 problem types panel
-  const renderGrade4Panel = () => (
-    <div className="border rounded-xl overflow-hidden">
-      {/* Panel Header */}
-      <button
-        type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <svg
-            className={`w-5 h-5 text-green-600 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-          <span className="font-medium text-green-800">Toán lớp 4</span>
-        </div>
-        <span className="text-sm font-semibold text-green-600">
-          {selectedGrade4Count} / {grade4Types.length} đã chọn
-        </span>
-      </button>
-
-      {/* Panel Content */}
-      <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          isExpanded ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <div className="p-4 border-t">
-          {/* Render grouped sections */}
-          {(['large_numbers', 'divisibility', 'fractions', 'geometry', 'word_problems', 'measurement'] as Grade4ProblemGroup[]).map((groupKey) => {
-            const typesInGroup = grade4Types.filter(t => t.group === groupKey);
-            if (typesInGroup.length === 0) return null;
-
-            const selectedInGroup = typesInGroup.filter(t => enabledTypes.includes(t.id)).length;
-            const groupInfo = GRADE4_PROBLEM_GROUP_LABELS[groupKey];
-
-            return (
-              <div key={groupKey} className="mb-4 last:mb-0">
-                {/* Group Header */}
-                <div className="flex items-center justify-between bg-green-100 px-3 py-2 rounded-lg mb-2">
-                  <span className="font-medium text-green-700">
-                    {groupInfo.icon} {groupInfo.label}
-                  </span>
-                  <span className="text-sm text-green-600">
-                    {selectedInGroup}/{typesInGroup.length}
-                  </span>
-                </div>
-                {/* Types in this group */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {typesInGroup.map((type) => (
-                    <label key={type.id} className="flex items-center p-3 border rounded-lg hover:bg-green-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={enabledTypes.includes(type.id)}
-                        onChange={() => handleTypeToggle(type.id)}
-                        className="mr-3 h-4 w-4 text-green-600"
-                      />
-                      <div>
-                        <div className="font-medium text-gray-800">{type.label}</div>
-                        <div className="text-sm text-gray-500">{type.description}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Render Grade 5 problem types panel
-  const renderGrade5Panel = () => (
-    <div className="border rounded-xl overflow-hidden">
-      {/* Panel Header */}
-      <button
-        type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 bg-orange-50 hover:bg-orange-100 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <svg
-            className={`w-5 h-5 text-orange-600 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-          <span className="font-medium text-orange-800">Toán lớp 5</span>
-        </div>
-        <span className="text-sm font-semibold text-orange-600">
-          {selectedGrade5Count} / {grade5Types.length} đã chọn
-        </span>
-      </button>
-
-      {/* Panel Content */}
-      <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          isExpanded ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <div className="p-4 border-t">
-          {/* Render grouped sections */}
-          {(['decimals', 'percentages', 'geometry', 'speed', 'word_problems', 'mixed'] as Grade5ProblemGroup[]).map((groupKey) => {
-            const typesInGroup = grade5Types.filter(t => t.group === groupKey);
-            if (typesInGroup.length === 0) return null;
-
-            const selectedInGroup = typesInGroup.filter(t => enabledTypes.includes(t.id)).length;
-            const groupInfo = GRADE5_PROBLEM_GROUP_LABELS[groupKey];
-
-            return (
-              <div key={groupKey} className="mb-4 last:mb-0">
-                {/* Group Header */}
-                <div className="flex items-center justify-between bg-orange-100 px-3 py-2 rounded-lg mb-2">
-                  <span className="font-medium text-orange-700">
-                    {groupInfo.icon} {groupInfo.label}
-                  </span>
-                  <span className="text-sm text-orange-600">
-                    {selectedInGroup}/{typesInGroup.length}
-                  </span>
+  const renderGrade5Panel = () => {
+    const t = PANEL_THEMES.secondary;
+    return (
+      <div className="overflow-hidden rounded-lg border border-line">
+        <PanelHeader title="Toán lớp 5" count={selectedGrade5Count} total={grade5Types.length} expanded={isExpanded} onToggle={() => setIsExpanded(!isExpanded)} theme={t} />
+        <div className={cx('overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out', isExpanded ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0')}>
+          <div className="border-t border-line p-4">
+            {(['decimals', 'percentages', 'geometry', 'speed', 'word_problems', 'mixed'] as Grade5ProblemGroup[]).map((groupKey) => {
+              const typesInGroup = grade5Types.filter(t => t.group === groupKey);
+              if (typesInGroup.length === 0) return null;
+              const selectedInGroup = typesInGroup.filter(t => enabledTypes.includes(t.id)).length;
+              const groupInfo = GRADE5_PROBLEM_GROUP_LABELS[groupKey];
+              return (
+                <div key={groupKey} className="mb-4 last:mb-0">
+                  <div className={cx('mb-2 flex items-center justify-between rounded-md px-3 py-2', t.groupBg)}>
+                    <span className={cx('font-semibold', t.groupText)}>{groupInfo.icon} {groupInfo.label}</span>
+                    <span className={cx('text-sm tabular-nums', t.groupCount)}>{selectedInGroup}/{typesInGroup.length}</span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                    {typesInGroup.map((type) => (
+                      <TypeCheckbox key={type.id} id={type.id} label={type.label} description={type.description} theme={t} />
+                    ))}
+                  </div>
                 </div>
-                {/* Types in this group */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {typesInGroup.map((type) => (
-                    <label key={type.id} className="flex items-center p-3 border rounded-lg hover:bg-orange-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={enabledTypes.includes(type.id)}
-                        onChange={() => handleTypeToggle(type.id)}
-                        className="mr-3 h-4 w-4 text-orange-600"
-                      />
-                      <div>
-                        <div className="font-medium text-gray-800">{type.label}</div>
-                        <div className="text-sm text-gray-500">{type.description}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Thiết lập bài kiểm tra</h1>
-        <p className="text-gray-600">{gradeLabel}</p>
+    <Card className="mx-auto max-w-4xl">
+      <div className="mb-8 text-center">
+        <h1 className="mb-2 font-display text-3xl font-bold text-ink">Thiết lập bài kiểm tra</h1>
+        <p className="text-ink-muted">{gradeLabel}</p>
       </div>
 
       <div className="space-y-6">
         {/* Student Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="student-name" className="mb-2 block text-sm font-semibold text-ink">
             Tên học sinh *
           </label>
           <input
+            id="student-name"
+            name="student-name"
             type="text"
+            autoComplete="given-name"
             value={studentName}
-            onChange={(e) => setStudentName(e.target.value)}
-            placeholder="Nhập tên của bạn..."
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            onChange={(e) => { setStudentName(e.target.value); if (error) setError(null); }}
+            placeholder="Nhập tên của con…"
+            aria-invalid={!!error && !studentName.trim()}
+            className="min-h-touch w-full rounded-md border-2 border-line bg-surface px-4 py-3 text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none"
           />
         </div>
 
         {/* Question Quantity */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-semibold text-ink">
             Số câu hỏi
             {minimumQuestionCount > 0 && (
-              <span className="text-purple-600 text-xs ml-2">
-                (Tối thiểu {minimumQuestionCount} câu)
-              </span>
+              <span className="ml-2 text-xs text-violet-ink">(Tối thiểu {minimumQuestionCount} câu)</span>
             )}
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {availableQuantities.map((quantity) => (
               <button
                 key={quantity}
                 onClick={() => setQuestionQuantity(quantity)}
-                className={`p-3 rounded-lg border-2 text-center font-medium transition-colors ${
+                className={cx(
+                  'min-h-touch rounded-md border-2 text-center font-display font-bold tabular-nums transition-[background-color,border-color,color] focus-visible:outline-none focus-visible:shadow-focus',
                   questionQuantity === quantity
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300'
-                }`}
+                    ? 'border-primary bg-primary-soft text-primary-strong'
+                    : 'border-line bg-surface text-ink hover:border-primary',
+                )}
               >
                 {quantity} câu
               </button>
@@ -515,54 +436,56 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
 
         {/* Difficulty */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Độ khó
-          </label>
+          <label className="mb-3 block text-sm font-semibold text-ink">Độ khó</label>
           <div className="space-y-2">
             {[
               { value: 'easy', label: 'Dễ', description: 'Số nhỏ, phép tính đơn giản' },
               { value: 'medium', label: 'Trung bình', description: 'Số vừa phải' },
               { value: 'hard', label: 'Khó', description: 'Số lớn, phép tính phức tạp' }
             ].map(({ value, label, description }) => (
-              <label key={value} className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+              <label key={value} className="flex min-h-touch cursor-pointer items-center rounded-md border border-line p-3 hover:bg-base">
                 <input
                   type="radio"
                   name="difficulty"
                   value={value}
                   checked={difficulty === value}
                   onChange={(e) => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
-                  className="mr-3 h-4 w-4 text-blue-600"
+                  className="mr-3 h-5 w-5 accent-primary"
                 />
                 <div>
-                  <div className="font-medium text-gray-800">{label}</div>
-                  <div className="text-sm text-gray-500">{description}</div>
+                  <div className="font-semibold text-ink">{label}</div>
+                  <div className="text-sm text-ink-muted">{description}</div>
                 </div>
               </label>
             ))}
           </div>
         </div>
 
+        {/* Inline validation error (no window.alert) */}
+        {error && (
+          <p role="alert" className="rounded-md bg-error-soft px-4 py-3 text-sm font-semibold text-error-ink">
+            {error}
+          </p>
+        )}
+
         {/* Start Button */}
-        <button
-          onClick={handleStart}
-          className="w-full font-bold py-4 px-6 rounded-xl text-lg transition-colors duration-200 bg-blue-500 hover:bg-blue-600 text-white"
-        >
+        <Button variant="primary" size="lg" fullWidth onClick={handleStart}>
           Bắt đầu kiểm tra
-        </button>
+        </Button>
       </div>
 
       {/* Review Types Modal */}
       {reviewModalType && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-purple-800 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4">
+          <div className="max-h-[80vh] w-full max-w-md overflow-y-auto overscroll-contain rounded-xl bg-surface p-6 shadow-card-hover">
+            <h2 className="mb-4 font-display text-xl font-bold text-violet-ink">
               {reviewModalType === 'semester1' ? 'Ôn tập Học kỳ 1 bao gồm:' : 'Ôn tập Học kỳ 2 bao gồm:'}
             </h2>
             {reviewModalType === 'semester1' ? (
-              <ul className="space-y-2 mb-6">
+              <ul className="mb-6 space-y-2">
                 {SEMESTER_1_TYPES.map((item, index) => (
-                  <li key={index} className="flex items-center text-gray-700">
-                    <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm mr-3">
+                  <li key={index} className="flex items-center text-ink">
+                    <span className="mr-3 flex h-6 w-6 items-center justify-center rounded-pill bg-violet-soft text-sm text-violet-ink tabular-nums">
                       {index + 1}
                     </span>
                     {item.label}
@@ -574,18 +497,15 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
                 {(['number_ops', 'measurement', 'geometry', 'word_problem'] as const).map((groupKey) => {
                   const groupItems = SEMESTER_2_TYPES.filter(item => item.group === groupKey);
                   if (groupItems.length === 0) return null;
-
                   return (
                     <div key={groupKey}>
-                      <h3 className="font-semibold text-purple-700 mb-2">
-                        {SEMESTER_2_GROUP_LABELS[groupKey]}
-                      </h3>
+                      <h3 className="mb-2 font-semibold text-violet-ink">{SEMESTER_2_GROUP_LABELS[groupKey]}</h3>
                       <ul className="space-y-2">
                         {groupItems.map((item) => {
                           const globalIndex = SEMESTER_2_TYPES.findIndex(t => t.type === item.type) + 1;
                           return (
-                            <li key={item.type} className="flex items-center text-gray-700">
-                              <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm mr-3">
+                            <li key={item.type} className="flex items-center text-ink">
+                              <span className="mr-3 flex h-6 w-6 items-center justify-center rounded-pill bg-violet-soft text-sm text-violet-ink tabular-nums">
                                 {globalIndex}
                               </span>
                               {item.label}
@@ -598,18 +518,15 @@ export const StudentSetup: React.FC<StudentSetupProps> = ({ onStart, initialSett
                 })}
               </div>
             )}
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="mb-4 text-sm text-ink-muted">
               Tối thiểu {reviewModalType === 'semester1' ? MIN_SEMESTER_1_QUESTIONS : MIN_SEMESTER_2_QUESTIONS} câu hỏi để đảm bảo mỗi dạng có ít nhất 1 câu.
             </p>
-            <button
-              onClick={() => setReviewModalType(null)}
-              className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-xl"
-            >
+            <Button variant="primary" fullWidth onClick={() => setReviewModalType(null)}>
               Đã hiểu
-            </button>
+            </Button>
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 };
