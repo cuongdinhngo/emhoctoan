@@ -2,55 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Fireworks Animation */
-.fireworks-animation {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.fireworks-animation > div {
-  animation-duration: 1s;
-  animation-iteration-count: 3;
-}
-
-.fireworks-animation .animate-bounce {
-  animation-delay: 0s;
-}
-
-.fireworks-animation .animate-pulse {
-  animation-delay: 0.2s;
-}
-
-.fireworks-animation .animate-ping {
-  animation-delay: 0.4s;
+/* ----------------------------------------------------------------------------
+   Design tokens mirrored as CSS variables.
+   Tailwind config (tailwind.config.js) is the source of truth for utilities;
+   these vars exist for contexts that can't use utility classes — <canvas>
+   drawing (AnalogClock) and raw SVG fills (FractionGrid). Keep them in sync.
+   See DESIGN.md.
+---------------------------------------------------------------------------- */
+:root {
+  --c-base: #FFFDF7;
+  --c-surface: #FFFFFF;
+  --c-ink: #22303A;
+  --c-ink-muted: #5B6B76;
+  --c-primary: #3B82F6;
+  --c-secondary: #F59E0B;
+  --c-success: #22C55E;
+  --c-error: #EF4444;
+  --c-line: #ECE7DC;
+  --c-primary-soft: #EFF6FF;
+  --c-success-soft: #F0FDF4;
+  --c-error-soft: #FEF2F2;
 }
 
 @layer base {
   html {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Be Vietnam Pro', system-ui, sans-serif;
   }
-  
+
   body {
     margin: 0;
     padding: 0;
-    background-color: #f8fafc;
+    color: var(--c-ink);
+    background-color: var(--c-base);
+  }
+
+  /* Clear, kid-friendly focus ring for keyboard users */
+  :focus-visible {
+    outline: 3px solid var(--c-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Faster, cleaner taps on touch (no 300ms delay / grey flash) */
+  button, a, label,
+  input[type="checkbox"], input[type="radio"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Balanced multi-line headings (avoid orphans) */
+  h1, h2, h3 {
+    text-wrap: balance;
   }
 }
 
-@layer components {
-  .btn-primary {
-    @apply bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200;
-  }
-  
-  .btn-secondary {
-    @apply bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200;
-  }
-  
-  .card {
-    @apply bg-white rounded-xl shadow-lg p-6;
+/* ----------------------------------------------------------------------------
+   Reduced motion — MOTION_INTENSITY=5 means we animate by default, so we must
+   collapse every animation/transition to instant when the user opts out.
+---------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

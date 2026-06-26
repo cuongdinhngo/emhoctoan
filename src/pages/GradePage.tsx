@@ -8,6 +8,8 @@ import { MobileDrawer } from '../components/MobileDrawer';
 import { ProgressTracker } from '../components/ProgressTracker';
 import { StudentSetup } from '../components/StudentSetup';
 import { TestResults } from '../components/TestResults';
+import { Button } from '../components/ui/Button';
+import { MenuIcon, XIcon } from '../components/ui/icons';
 import { ProblemGenerator } from '../utils/problemGenerator';
 import { StorageManager } from '../utils/storage';
 import { ProblemSettings, ScoreData, ProgressData, SessionData, QuestionListItem } from '../types';
@@ -230,21 +232,21 @@ export const GradePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="min-h-[100dvh] bg-base">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="border-b border-line bg-surface">
         <div className="max-w-6xl mx-auto px-4 py-4">
           {/* Mobile Layout */}
           <div className="lg:hidden">
             {/* First Row: App Icon & User Name */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-3">
-                <Link to="/" className="text-3xl hover:opacity-80 transition-opacity">&#129518;</Link>
-                <h1 className="text-xl font-bold text-gray-800">Em Hoc Toan - {gradeConfig?.shortLabel}</h1>
+                <Link to="/" className="text-3xl transition-opacity hover:opacity-80" aria-label="Về trang chủ">&#129518;</Link>
+                <h1 className="font-display text-xl font-bold text-ink">Em Học Toán · {gradeConfig?.shortLabel}</h1>
               </div>
               {appState === 'testing' && sessionData && (
-                <div className="text-sm text-gray-600">
-                  <span className="font-semibold">{sessionData.settings.studentName}</span>
+                <div className="text-sm text-ink-muted">
+                  <span className="font-semibold text-ink">{sessionData.settings.studentName}</span>
                 </div>
               )}
             </div>
@@ -252,18 +254,8 @@ export const GradePage = () => {
             {/* Second Row: Reset & Stats Buttons (only show during testing) */}
             {appState === 'testing' && sessionData && (
               <div className="flex gap-2">
-                <button
-                  onClick={startNewTest}
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-                >
-                  Bắt đầu lại
-                </button>
-                <button
-                  onClick={() => setShowProgress(true)}
-                  className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-                >
-                  Thống kê
-                </button>
+                <Button variant="ghost" fullWidth onClick={startNewTest}>Bắt đầu lại</Button>
+                <Button variant="primary" fullWidth onClick={() => setShowProgress(true)}>Thống kê</Button>
               </div>
             )}
           </div>
@@ -272,28 +264,18 @@ export const GradePage = () => {
           <div className="hidden lg:flex lg:items-center lg:justify-between">
             {/* Left side: App Icon */}
             <div className="flex items-center space-x-3">
-              <Link to="/" className="text-3xl hover:opacity-80 transition-opacity">&#129518;</Link>
-              <h1 className="text-2xl font-bold text-gray-800">Em Hoc Toan - {gradeConfig?.shortLabel}</h1>
+              <Link to="/" className="text-3xl transition-opacity hover:opacity-80" aria-label="Về trang chủ">&#129518;</Link>
+              <h1 className="font-display text-2xl font-bold text-ink">Em Học Toán · {gradeConfig?.shortLabel}</h1>
             </div>
 
             {/* Right side: User Name, Reset & Stats Buttons (only show during testing) */}
             {appState === 'testing' && sessionData && (
               <div className="flex items-center space-x-4">
-                <div className="text-sm text-gray-600">
-                  <span className="font-semibold">{sessionData.settings.studentName}</span>
+                <div className="text-sm text-ink-muted">
+                  <span className="font-semibold text-ink">{sessionData.settings.studentName}</span>
                 </div>
-                <button
-                  onClick={startNewTest}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-                >
-                  Bắt đầu lại
-                </button>
-                <button
-                  onClick={() => setShowProgress(true)}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-                >
-                  Thống kê
-                </button>
+                <Button variant="ghost" onClick={startNewTest}>Bắt đầu lại</Button>
+                <Button variant="primary" onClick={() => setShowProgress(true)}>Thống kê</Button>
               </div>
             )}
           </div>
@@ -316,11 +298,10 @@ export const GradePage = () => {
             <div className="lg:hidden fixed bottom-4 right-4 z-30">
               <button
                 onClick={() => setShowMobileDrawer(true)}
-                className="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg transition-colors"
+                aria-label="Mở danh sách câu hỏi"
+                className="flex h-touch w-touch items-center justify-center rounded-pill bg-primary text-white shadow-card-hover transition-colors hover:bg-primary-strong focus-visible:outline-none focus-visible:shadow-focus active:translate-y-[2px]"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                <MenuIcon />
               </button>
             </div>
 
@@ -388,13 +369,10 @@ export const GradePage = () => {
 
                 {/* Submit Quiz Button - appears when all questions are answered */}
                 {allQuestionsAnswered && (
-                  <div className="mt-6">
-                    <button
-                      onClick={submitQuiz}
-                      className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-xl text-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                    >
-                      <span>Nop bai</span>
-                    </button>
+                  <div className="mt-6 animate-slide-up">
+                    <Button variant="success" size="lg" fullWidth onClick={submitQuiz}>
+                      Nộp bài
+                    </Button>
                   </div>
                 )}
               </div>
@@ -414,15 +392,16 @@ export const GradePage = () => {
 
       {/* Progress Modal */}
       {progress && (
-        <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ${showProgress ? 'block' : 'hidden'}`}>
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Thống kê học tập</h2>
+        <div className={`fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4 ${showProgress ? 'block' : 'hidden'}`}>
+          <div className="w-full max-w-md rounded-xl bg-surface p-6 shadow-card-hover">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-xl font-bold text-ink">Thống kê học tập</h2>
               <button
                 onClick={() => setShowProgress(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
+                aria-label="Đóng"
+                className="flex h-touch w-touch items-center justify-center rounded-pill text-ink-muted transition-colors hover:bg-base hover:text-ink focus-visible:outline-none focus-visible:shadow-focus"
               >
-                x
+                <XIcon />
               </button>
             </div>
             <ProgressTracker progress={progress} />

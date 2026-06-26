@@ -1,4 +1,5 @@
 import React from 'react';
+import { OptionTile, OptionState } from './ui/OptionTile';
 
 interface MultipleChoiceInputProps {
   options?: number[];
@@ -30,25 +31,18 @@ export const MultipleChoiceInput: React.FC<MultipleChoiceInputProps> = ({
   // Determine if this is a text-based MCQ
   const isTextMode = textOptions && textOptions.length > 0;
 
-  const getOptionStyle = (option: number | string, isText: boolean) => {
+  // Map each option to an OptionTile state. Correct/wrong tiles render an
+  // icon + label in OptionTile, so feedback never relies on color alone.
+  const getState = (option: number | string, isText: boolean): OptionState => {
     const selectedAnswer = isText ? userTextAnswer : userAnswer;
     const correct = isText ? correctTextAnswer : correctAnswer;
 
     if (!showResult) {
-      return selectedAnswer === option
-        ? 'bg-blue-500 text-white border-blue-500'
-        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300';
+      return selectedAnswer === option ? 'selected' : 'idle';
     }
-
-    if (option === correct) {
-      return 'bg-green-500 text-white border-green-500';
-    }
-
-    if (selectedAnswer === option && option !== correct) {
-      return 'bg-red-500 text-white border-red-500';
-    }
-
-    return 'bg-gray-100 text-gray-500 border-gray-300';
+    if (option === correct) return 'correct';
+    if (selectedAnswer === option && option !== correct) return 'wrong';
+    return 'muted';
   };
 
   const handleClick = (option: number | string, isText: boolean) => {
@@ -60,40 +54,34 @@ export const MultipleChoiceInput: React.FC<MultipleChoiceInputProps> = ({
     }
   };
 
-  // Text options mode
   if (isTextMode) {
     return (
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {textOptions.map((option, index) => (
-          <button
+          <OptionTile
             key={index}
-            onClick={() => handleClick(option, true)}
+            state={getState(option, true)}
             disabled={disabled}
-            className={`p-4 rounded-xl border-2 font-bold text-lg transition-all duration-200 ${
-              disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-md'
-            } ${getOptionStyle(option, true)}`}
+            onClick={() => handleClick(option, true)}
           >
             {option}
-          </button>
+          </OptionTile>
         ))}
       </div>
     );
   }
 
-  // Numeric options mode (default)
   return (
     <div className="grid grid-cols-2 gap-3">
       {(options || []).map((option, index) => (
-        <button
+        <OptionTile
           key={index}
-          onClick={() => handleClick(option, false)}
+          state={getState(option, false)}
           disabled={disabled}
-          className={`p-4 rounded-xl border-2 font-bold text-lg transition-all duration-200 ${
-            disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-md'
-          } ${getOptionStyle(option, false)}`}
+          onClick={() => handleClick(option, false)}
         >
           {formatNumberVi(option)}
-        </button>
+        </OptionTile>
       ))}
     </div>
   );
