@@ -1,9 +1,17 @@
 import React from 'react';
 import { ProgressData } from '../types';
+import { cx } from './ui/cx';
 
 interface ProgressTrackerProps {
   progress: ProgressData;
 }
+
+const stats = (progress: ProgressData) => [
+  { value: progress.totalSessions, label: 'Phiên học', bg: 'bg-primary-soft', text: 'text-primary-strong' },
+  { value: progress.totalProblems, label: 'Bài tập', bg: 'bg-success-soft', text: 'text-success-ink' },
+  { value: progress.bestStreak, label: 'Kỷ lục', bg: 'bg-secondary-soft', text: 'text-secondary-strong' },
+  { value: `${Math.round(progress.averageScore * 100)}%`, label: 'Trung bình', bg: 'bg-violet-soft', text: 'text-violet-ink' },
+];
 
 export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progress }) => {
   const formatDate = (dateString: string) => {
@@ -18,36 +26,19 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progress }) =>
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <h3 className="text-xl font-bold mb-4 text-gray-800">Thống kê tổng quan</h3>
-      
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="text-center p-3 bg-blue-50 rounded-lg">
-          <div className="text-2xl font-bold text-blue-600">{progress.totalSessions}</div>
-          <div className="text-sm text-gray-600">Phiên học</div>
-        </div>
-        
-        <div className="text-center p-3 bg-green-50 rounded-lg">
-          <div className="text-2xl font-bold text-green-600">{progress.totalProblems}</div>
-          <div className="text-sm text-gray-600">Bài tập</div>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="text-center p-3 bg-yellow-50 rounded-lg">
-          <div className="text-2xl font-bold text-yellow-600">{progress.bestStreak}</div>
-          <div className="text-sm text-gray-600">Kỷ lục</div>
-        </div>
-        
-        <div className="text-center p-3 bg-purple-50 rounded-lg">
-          <div className="text-2xl font-bold text-purple-600">
-            {Math.round(progress.averageScore * 100)}%
+    <div>
+      <h3 className="mb-4 font-display text-xl font-bold text-ink">Thống kê tổng quan</h3>
+
+      <div className="mb-4 grid grid-cols-2 gap-4">
+        {stats(progress).map((s) => (
+          <div key={s.label} className={cx('rounded-md p-3 text-center', s.bg)}>
+            <div className={cx('font-display text-3xl font-extrabold tabular-nums', s.text)}>{s.value}</div>
+            <div className="mt-1 text-sm text-ink-muted">{s.label}</div>
           </div>
-          <div className="text-sm text-gray-600">Trung bình</div>
-        </div>
+        ))}
       </div>
-      
-      <div className="text-center text-sm text-gray-500">
+
+      <div className="text-center text-sm text-ink-muted">
         Lần cuối: {formatDate(progress.lastPlayed)}
       </div>
     </div>

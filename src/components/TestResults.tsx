@@ -1,6 +1,10 @@
 import React, { useMemo } from 'react';
 import { SessionData, ProblemType } from '../types';
 import { PROBLEM_TYPE_LABELS } from '../constants/problemTypes';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
+import { CheckIcon, XIcon, RefreshIcon, SparkIcon } from './ui/icons';
+import { cx } from './ui/cx';
 
 interface TestResultsProps {
   sessionData: SessionData;
@@ -9,11 +13,11 @@ interface TestResultsProps {
   onNewTest: () => void;
 }
 
-export const TestResults: React.FC<TestResultsProps> = ({ 
-  sessionData, 
-  onReviewQuestion, 
-  onRetake, 
-  onNewTest 
+export const TestResults: React.FC<TestResultsProps> = ({
+  sessionData,
+  onReviewQuestion,
+  onRetake,
+  onNewTest
 }) => {
   const { problems, currentScore, settings } = sessionData;
   const percentage = Math.round((currentScore.correct / currentScore.total) * 100);
@@ -46,129 +50,126 @@ export const TestResults: React.FC<TestResultsProps> = ({
   }, [problems]);
 
   const getGradeMessage = (percentage: number) => {
-    if (percentage >= 90) return { message: 'Xuất sắc! 🌟', color: 'text-green-600' };
-    if (percentage >= 80) return { message: 'Giỏi lắm! 👏', color: 'text-blue-600' };
-    if (percentage >= 70) return { message: 'Khá tốt! 👍', color: 'text-yellow-600' };
-    if (percentage >= 60) return { message: 'Cần cố gắng thêm! 💪', color: 'text-orange-600' };
-    return { message: 'Hãy ôn tập lại nhé! 📚', color: 'text-red-600' };
+    if (percentage >= 90) return { message: 'Xuất sắc! Con rất giỏi 🌟', color: 'text-success-ink' };
+    if (percentage >= 80) return { message: 'Giỏi lắm! Tiếp tục nhé 👏', color: 'text-primary-strong' };
+    if (percentage >= 70) return { message: 'Khá tốt rồi! 👍', color: 'text-secondary-strong' };
+    if (percentage >= 60) return { message: 'Cần cố gắng thêm chút nữa 💪', color: 'text-secondary-strong' };
+    return { message: 'Mình cùng ôn lại nhé! 📚', color: 'text-error-ink' };
   };
 
   const gradeInfo = getGradeMessage(percentage);
 
+  // Token color for a per-type score
+  const statTone = (p: number) =>
+    p >= 80 ? { text: 'text-success-ink', bar: 'bg-success' }
+    : p >= 60 ? { text: 'text-secondary-strong', bar: 'bg-secondary' }
+    : { text: 'text-error-ink', bar: 'bg-error' };
+
   // Helper function to clean question text for display
   const cleanQuestionText = (question: string): string => {
     let cleaned = question;
-    // Remove clock tags
     cleaned = cleaned.replace(/\[CLOCK:\d+:\d+\]\s*/, '');
-    // Remove fraction options tags
     cleaned = cleaned.replace(/\[FRACTION_OPTIONS:\[.*?\]\]\s*/, '');
     return cleaned;
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Kết quả kiểm tra</h1>
-        <p className="text-gray-600">Học sinh: <span className="font-semibold">{settings.studentName}</span></p>
+    <Card className="mx-auto max-w-4xl">
+      <div className="mb-8 text-center">
+        <div className="mb-2 flex items-center justify-center text-secondary">
+          <SparkIcon size={28} className="animate-bounce-soft" aria-hidden="true" />
+        </div>
+        <h1 className="mb-2 font-display text-3xl font-bold text-ink">Kết quả kiểm tra</h1>
+        <p className="text-ink-muted">Học sinh: <span className="font-semibold text-ink">{settings.studentName}</span></p>
       </div>
 
       {/* Score Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="text-center p-6 bg-blue-50 rounded-xl">
-          <div className="text-4xl font-bold text-blue-600">{currentScore.correct}</div>
-          <div className="text-gray-600">Câu đúng</div>
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="rounded-lg bg-primary-soft p-6 text-center">
+          <div className="font-display text-5xl font-extrabold tabular-nums text-primary-strong">{currentScore.correct}</div>
+          <div className="mt-1 text-ink-muted">Câu đúng</div>
         </div>
-        
-        <div className="text-center p-6 bg-green-50 rounded-xl">
-          <div className="text-4xl font-bold text-green-600">{percentage}%</div>
-          <div className="text-gray-600">Điểm số</div>
+        <div className="rounded-lg bg-success-soft p-6 text-center">
+          <div className="font-display text-5xl font-extrabold tabular-nums text-success-ink">{percentage}%</div>
+          <div className="mt-1 text-ink-muted">Điểm số</div>
         </div>
-        
-        <div className="text-center p-6 bg-purple-50 rounded-xl">
-          <div className="text-4xl font-bold text-purple-600">{currentScore.total}</div>
-          <div className="text-gray-600">Tổng câu</div>
+        <div className="rounded-lg bg-violet-soft p-6 text-center">
+          <div className="font-display text-5xl font-extrabold tabular-nums text-violet-ink">{currentScore.total}</div>
+          <div className="mt-1 text-ink-muted">Tổng câu</div>
         </div>
       </div>
 
       {/* Grade Message */}
-      <div className={`text-center text-2xl font-bold mb-8 ${gradeInfo.color}`}>
+      <div className={cx('mb-8 text-center font-display text-2xl font-bold', gradeInfo.color)}>
         {gradeInfo.message}
       </div>
 
       {/* Question Type Statistics */}
       <div className="mb-8">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">Thống kê theo dạng bài</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {typeStats.map(stat => (
-            <div key={stat.type} className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-medium text-gray-700">{stat.label}</span>
-                <span className={`font-bold ${
-                  stat.percentage >= 80 ? 'text-green-600' :
-                  stat.percentage >= 60 ? 'text-yellow-600' : 'text-red-600'
-                }`}>
-                  {stat.correct}/{stat.total} ({stat.percentage}%)
-                </span>
+        <h3 className="mb-4 font-display text-xl font-bold text-ink">Thống kê theo dạng bài</h3>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {typeStats.map(stat => {
+            const tone = statTone(stat.percentage);
+            return (
+              <div key={stat.type} className="rounded-md bg-base p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="font-semibold text-ink">{stat.label}</span>
+                  <span className={cx('font-bold tabular-nums', tone.text)}>
+                    {stat.correct}/{stat.total} ({stat.percentage}%)
+                  </span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-pill bg-line">
+                  <div className={cx('h-2 rounded-pill transition-[width] duration-500', tone.bar)} style={{ width: `${stat.percentage}%` }} />
+                </div>
               </div>
-              {/* Progress bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className={`h-2 rounded-full ${
-                    stat.percentage >= 80 ? 'bg-green-500' :
-                    stat.percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}
-                  style={{ width: `${stat.percentage}%` }}
-                />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* Question Review */}
       <div className="mb-8">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">Chi tiết từng câu hỏi</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h3 className="mb-4 font-display text-xl font-bold text-ink">Chi tiết từng câu hỏi</h3>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {problems.map((problem, index) => (
             <button
               key={problem.id}
               onClick={() => onReviewQuestion(problem.id)}
-              className={`p-4 rounded-lg border-2 text-left transition-all duration-200 hover:shadow-md ${
-                problem.isCorrect 
-                  ? 'bg-green-100 border-green-500 text-green-700' 
-                  : 'bg-red-100 border-red-500 text-red-700'
-              }`}
+              className={cx(
+                'flex min-h-touch items-center justify-between gap-3 rounded-md border-2 p-4 text-left',
+                'transition-[transform,box-shadow] duration-200 hover:shadow-card focus-visible:outline-none focus-visible:shadow-focus',
+                problem.isCorrect
+                  ? 'border-success bg-success-soft text-success-ink'
+                  : 'border-error bg-error-soft text-error-ink',
+              )}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">Câu {index + 1}</div>
-                  <div className="text-sm opacity-75">{cleanQuestionText(problem.question)}</div>
-                </div>
-                <div className="text-lg">
-                  {problem.isCorrect ? '✅' : '❌'}
-                </div>
+              <div className="min-w-0">
+                <div className="font-semibold">Câu {index + 1}</div>
+                <div className="truncate text-sm text-ink-muted">{cleanQuestionText(problem.question)}</div>
               </div>
+              <span
+                className={cx(
+                  'flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-pill text-white',
+                  problem.isCorrect ? 'bg-success' : 'bg-error',
+                )}
+                aria-label={problem.isCorrect ? 'Đúng' : 'Sai'}
+              >
+                {problem.isCorrect ? <CheckIcon size={18} /> : <XIcon size={18} />}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <button
-          onClick={onRetake}
-          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
-        >
-          🔄 Làm lại bài này
-        </button>
-        
-        <button
-          onClick={onNewTest}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-200"
-        >
-          🆕 Bài kiểm tra mới
-        </button>
+      <div className="flex flex-col justify-center gap-4 sm:flex-row">
+        <Button variant="secondary" size="lg" onClick={onRetake}>
+          <RefreshIcon size={20} /> Làm lại bài này
+        </Button>
+        <Button variant="primary" size="lg" onClick={onNewTest}>
+          <SparkIcon size={20} /> Bài kiểm tra mới
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 };
